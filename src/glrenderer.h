@@ -23,7 +23,7 @@ protected:
 private:
     void makeFBO();
     // Task 30: Update the paintTexture function signature
-    void paintTexture(GLuint texture);
+    void paintTexture(GLuint texture, bool postProcessing);
     void initializeExampleGeometry();
     void paintExampleGeometry();
 
