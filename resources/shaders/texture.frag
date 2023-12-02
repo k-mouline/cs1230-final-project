@@ -18,13 +18,9 @@ void main()
     fragColor = texture(myTexture, fragUV);
     // Task 33: Invert fragColor's r, g, and b color channels if your bool is true
     if(postProcessing){
-//        fragColor.x = 1.0/fragColor.x;
-//        fragColor.y = 1.0/fragColor.y;
-//        fragColor.z = 1.0/fragColor.z;
-
-                fragColor.x = 1.0-fragColor.x;
-                fragColor.y = 1.0-fragColor.y;
-                fragColor.z = 1.0-fragColor.z;
+                fragColor.x = fragColor.x;
+                fragColor.y = fragColor.y;
+                fragColor.z = fragColor.z;
     }
 
 }

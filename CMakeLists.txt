@@ -29,6 +29,8 @@ add_executable(${PROJECT_NAME}
   src/mainwindow.h
   src/shaderloader.h
   src/examplehelpers.h
+  src/camera.h src/camera.cpp
+  src/cube.h src/cube.cpp
 )
 
 # Specifies other files

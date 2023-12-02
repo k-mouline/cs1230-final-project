@@ -5,6 +5,7 @@
 
 #include "shaderloader.h"
 #include "examplehelpers.h"
+#include "cube.h"
 
 GLRenderer::GLRenderer(QWidget *parent)
   : QOpenGLWidget(parent),
@@ -134,9 +135,10 @@ void GLRenderer::initializeGL()
   glBindVertexArray(m_fullscreen_vao);
 
   // Task 14: modify the code below to add a second attribute to the vertex attribute array
+  // Task 14: modify the code below to add a second attribute to the vertex attribute array
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), nullptr);
-  glEnableVertexAttribArray(1); // Texture coordinate attribute
+  glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
 
   // Unbind the fullscreen quad's VBO and VAO
@@ -157,12 +159,10 @@ void GLRenderer::makeFBO(){
 
 
     // Task 20: Generate and bind a renderbuffer of the right size, set its format, then unbind
-  GLuint rbo;
-  glGenRenderbuffers(1, &rbo);
-  glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_fbo_width, m_fbo_height);
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
+    glGenRenderbuffers(1, &m_fbo_renderbuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, m_fbo_renderbuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_fbo_width, m_fbo_height);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
     // Task 18: Generate and bind an FBO
     glGenFramebuffers(1, &m_fbo);
@@ -193,6 +193,8 @@ void GLRenderer::paintGL()
 
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBindVertexArray(m_sphere_vao);
+
     paintExampleGeometry();
 
     // Task 25: Bind the default framebuffer
@@ -253,19 +255,22 @@ void GLRenderer::initializeExampleGeometry()
   glBindBuffer(GL_ARRAY_BUFFER, m_sphere_vbo);
 
   // Put data into the VBO
-  m_sphere_data = generateSphereData(10, 20);
-  glBufferData(GL_ARRAY_BUFFER,
-               m_sphere_data.size() * sizeof(GLfloat),
-               m_sphere_data.data(),
-               GL_STATIC_DRAW);
+  Cube* newCube = new Cube(glm::mat4());
+  m_sphere_data = newCube->initialize(10, 20);
+  glBufferData(GL_ARRAY_BUFFER, m_sphere_data.size() * sizeof(GLfloat), m_sphere_data.data(), GL_STATIC_DRAW);
+
 
   // Generate and bind the VAO, with our VBO currently bound
   glGenVertexArrays(1, &m_sphere_vao);
   glBindVertexArray(m_sphere_vao);
 
   // Define VAO attributes
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT,GL_FALSE, 3 * sizeof(GLfloat), reinterpret_cast<void *>(0));
+  glEnableVertexAttribArray(0); // handles Vertex positions
+  glEnableVertexAttribArray(1); // handles Vertex normals
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), reinterpret_cast<void*>(0));
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), reinterpret_cast<void *>(3 * sizeof(GLfloat)));
+
 
   // Unbind
   glBindVertexArray(0);
@@ -275,11 +280,12 @@ void GLRenderer::initializeExampleGeometry()
 void GLRenderer::paintExampleGeometry()
 {
   // Paint the geometry for a sphere
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glBindVertexArray(m_sphere_vao);
 
   glUseProgram(m_phong_shader);
 
-  // Set uniforms for Phong vertex shader
+  // Set unif   orms for Phong vertex shader
   auto modelLoc = glGetUniformLocation(m_phong_shader, "modelMatrix");
   auto viewLoc  = glGetUniformLocation(m_phong_shader, "viewMatrix");
   auto projLoc  = glGetUniformLocation(m_phong_shader, "projMatrix");
