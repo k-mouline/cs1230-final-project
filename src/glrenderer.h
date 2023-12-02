@@ -7,9 +7,19 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/transform.hpp"
 #include "glm/glm.hpp"
+#include "src/camera.h"
+#include <QElapsedTimer>
+#include <QOpenGLWidget>
+#include <QMouseEvent>
+#include <QKeyEvent>
+
+
 
 class GLRenderer : public QOpenGLWidget
 {
+
+public slots:
+    void tick(QTimerEvent* event);                      // Called once per tick of m_timer
 public:
     GLRenderer(QWidget *parent = nullptr);
 
@@ -29,12 +39,38 @@ private:
 
     void rebuildCameraMatrices(int w, int h);
 
+    void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void timerEvent(QTimerEvent *event) override;
+    void updateCamera();
+
     int m_devicePixelRatio;
     GLuint m_defaultFBO;
     int m_fbo_width;
     int m_fbo_height;
     int m_screen_width;
     int m_screen_height;
+
+    glm::vec3 cameraPos;
+    glm::vec3 cameraFront;
+    glm::vec3 cameraUp;
+    float cameraSpeed;
+
+
+    int m_timer;                                        // Stores timer which attempts to run ~60 times per second
+    QElapsedTimer m_elapsedTimer;                       // Stores timer which keeps track of actual time between frames
+
+    // Input Related Variables
+    bool m_mouseDown = false;                           // Stores state of left mouse button
+    glm::vec2 m_prev_mouse_pos;
+
+    SceneCameraData m_renderData;
+    std::unordered_map<Qt::Key, bool> m_keyMap;         // Stores whether keys are pressed or not
+
+
 
     GLuint m_texture_shader;
     GLuint m_fullscreen_vbo;

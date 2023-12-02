@@ -5,7 +5,7 @@ camera::camera()
 
 }
 
-glm::mat4 camera::getViewMatrix(const SceneCameraData& cameraMetaData) const {
+glm::mat4 camera::getViewMatrix(const SceneCameraData& cameraMetaData) {
 
     glm::vec3 upMetaData = glm::vec3(cameraMetaData.up);
     glm::vec3 pos = cameraMetaData.pos;

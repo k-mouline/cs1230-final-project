@@ -6,6 +6,7 @@
 #include "shaderloader.h"
 #include "examplehelpers.h"
 #include "cube.h"
+#include "camera.h"
 
 GLRenderer::GLRenderer(QWidget *parent)
   : QOpenGLWidget(parent),
@@ -15,8 +16,27 @@ GLRenderer::GLRenderer(QWidget *parent)
     m_angleX(6),
     m_angleY(0),
     m_zoom(2)
+
+
 {
+
   rebuildCameraMatrices(this->width(), this->height());
+
+    m_prev_mouse_pos = glm::vec2(size().width()/2, size().height()/2);
+    setMouseTracking(true);
+    setFocusPolicy(Qt::StrongFocus);
+
+    m_keyMap[Qt::Key_W]       = false;
+    m_keyMap[Qt::Key_A]       = false;
+    m_keyMap[Qt::Key_S]       = false;
+    m_keyMap[Qt::Key_D]       = false;
+    m_keyMap[Qt::Key_Control] = false;
+    m_keyMap[Qt::Key_Space]   = false;
+
+    m_proj = glm::perspective(glm::radians(45.0), 1.0 * this->width() / this->height(), 0.01,100.0);
+
+
+
 }
 
 void GLRenderer::finish()
@@ -40,6 +60,10 @@ void GLRenderer::finish()
 
 void GLRenderer::initializeGL()
 {
+
+  m_timer = startTimer(1000/60);
+  m_elapsedTimer.start();
+
   m_devicePixelRatio = this->devicePixelRatio();
 
   m_defaultFBO = 2;
@@ -180,11 +204,7 @@ void GLRenderer::makeFBO(){
 
 void GLRenderer::paintGL()
 {
-//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//    paintTexture(m_kitten_texture);
 
-    // Task 23: Uncomment the following code
-    // Task 24: Bind our FBO
     glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
 
@@ -310,24 +330,152 @@ void GLRenderer::paintExampleGeometry()
   glUseProgram(0);
 }
 
+
 void GLRenderer::rebuildCameraMatrices(int w, int h)
 {
-  // Update view matrix by rotating eye vector based on x and y angles
+  // Initialize cameraUp
+  cameraUp = glm::vec3(0, 0, 1);  // Assuming Z-axis is up
 
-  // Create a new view matrix
-  m_view = glm::mat4(1);
-  glm::mat4 rot = glm::rotate(glm::radians(-10 * m_angleX), glm::vec3(0,0,1));
-  glm::vec3 eye = glm::vec3(2,0,0);
-  eye = glm::vec3(rot * glm::vec4(eye, 1));
-  
-  rot = glm::rotate(glm::radians(-10 * m_angleY), glm::cross(glm::vec3(0,0,1),eye));
-  eye = glm::vec3(rot * glm::vec4(eye, 1));
-  
-  eye = eye * m_zoom;
-  
-  m_view = glm::lookAt(eye,glm::vec3(0,0,0),glm::vec3(0,0,1));
-  
-  m_proj = glm::perspective(glm::radians(45.0), 1.0 * w / h, 0.01,100.0);
-  
+  // Calculate the eye position based on m_angleX, m_angleY, and m_zoom
+  glm::mat4 rotX = glm::rotate(glm::radians(-10 * m_angleX), glm::vec3(0, 0, 1));
+  glm::vec3 eye = glm::vec3(2, 0, 0);  // Initial eye position
+  eye = glm::vec3(rotX * glm::vec4(eye, 1));
+
+  glm::mat4 rotY = glm::rotate(glm::radians(-10 * m_angleY), glm::cross(glm::vec3(0, 0, 1), eye));
+  eye = glm::vec3(rotY * glm::vec4(eye, 1));
+
+  eye *= m_zoom;
+
+  // Set cameraPos to the calculated eye position
+  cameraPos = eye;
+
+  // Calculate the direction the camera is facing
+  cameraFront = glm::normalize(glm::vec3(0, 0, 0) - eye); // Assuming the camera is looking at (0,0,0)
+
+  // Create the view matrix
+  m_view = glm::lookAt(eye, glm::vec3(0, 0, 0), cameraUp);
+
+  // Create the projection matrix
+  m_proj = glm::perspective(glm::radians(45.0), 1.0 * w / h, 0.01, 100.0);
+
+  update();
+}
+
+void GLRenderer::keyPressEvent(QKeyEvent *event) {
+  m_keyMap[Qt::Key(event->key())] = true;
+}
+
+void GLRenderer::keyReleaseEvent(QKeyEvent *event) {
+  m_keyMap[Qt::Key(event->key())] = false;
+}
+
+void GLRenderer::mousePressEvent(QMouseEvent *event) {
+  if (event->buttons().testFlag(Qt::LeftButton)) {
+      m_mouseDown = true;
+      m_prev_mouse_pos = glm::vec2(event->position().x(), event->position().y());
+  }
+}
+
+void GLRenderer::mouseReleaseEvent(QMouseEvent *event) {
+  if (!event->buttons().testFlag(Qt::LeftButton)) {
+      m_mouseDown = false;
+  }
+}
+
+void GLRenderer::mouseMoveEvent(QMouseEvent *event) {
+  if (m_mouseDown) {
+      int posX = event->position().x();
+      int posY = event->position().y();
+      int deltaX = posX - m_prev_mouse_pos.x;
+      int deltaY = posY - m_prev_mouse_pos.y;
+      m_prev_mouse_pos = glm::vec2(posX, posY);
+
+      // rotation speed from assignment
+      float rotationSpeed = 0.05;
+
+      // Calculate the new front vector
+      glm::mat4 rotator;
+
+      // Rotate around the vertical (world Y) axis
+      if (deltaX != 0) {
+          float angleX = deltaX * rotationSpeed;
+          rotator = glm::rotate(glm::mat4(1.0f), glm::radians(angleX), glm::vec3(0, 0, 1));
+          cameraFront = glm::vec3(rotator * glm::vec4(cameraFront, 0.0));
+          cameraUp = glm::vec3(rotator * glm::vec4(cameraUp, 0.0));
+      }
+
+      // Rotate around the horizontal axis (cross product of camera's up and front)
+      if (deltaY != 0) {
+          glm::vec3 right = glm::normalize(glm::cross(cameraFront, cameraUp));
+          float angleY = deltaY * rotationSpeed;
+          rotator = glm::rotate(glm::mat4(1.0f), glm::radians(angleY), right);
+          cameraFront = glm::vec3(rotator * glm::vec4(cameraFront, 0.0));
+          cameraUp = glm::vec3(rotator * glm::vec4(cameraUp, 0.0));
+      }
+
+      // Normalize vectors to prevent scaling issues
+      cameraFront = glm::normalize(cameraFront);
+      cameraUp = glm::normalize(cameraUp);
+
+      // Update camera with the new vectors
+      updateCamera();
+      update();
+
+  }
+}
+
+void GLRenderer::timerEvent(QTimerEvent *event) {
+  int elapsedms   = m_elapsedTimer.elapsed();
+  float deltaTime = elapsedms * 0.001f;
+  m_elapsedTimer.restart();
+
+  // speed of 5, multiply by deltatime to account for specs from handout
+  float speed = 5.0f;
+  float distance = speed * deltaTime;
+
+  // get the front, right, and up vectors from camera data
+//  glm::vec3 cameraFront = glm::normalize(-m_renderData.look);
+//  glm::vec3 cameraRight = glm::normalize(glm::cross(glm::vec3(m_renderData.up), cameraFront));
+
+  // if s is pressed move forward in look direction
+  if (m_keyMap[Qt::Key_S]) {
+      cameraPos -= distance * cameraFront;
+      std::cout << cameraPos.r << std::endl;
+  }
+
+  // if w is pressed move backwards in look direction
+  if (m_keyMap[Qt::Key_W]) {
+
+      cameraPos += distance * cameraFront;
+
+  }
+  // if A is pressed move to the left of the cross product of up and front vectors
+  if (m_keyMap[Qt::Key_A]) {
+      cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * distance;
+
+  }
+  // if D is pressed move to the right of the cross product of up and front vectors
+  if (m_keyMap[Qt::Key_D]) {
+      cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * distance;
+
+  }
+  // translate camera among world space vector up
+  if (m_keyMap[Qt::Key_Space]) {
+      cameraPos += glm::vec3(0, 0, 1) * distance;
+
+  }
+  // translate camera among world space vector down
+  if (m_keyMap[Qt::Key_Control]) {
+      cameraPos -= glm::vec3(0, 0, 1) * distance;
+  }
+  // recalculate viewMatrix with the updated parameters
+  updateCamera();
+  update(); // asks for a PaintGL() call to occur
+}
+
+void GLRenderer::updateCamera() {
+  m_view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+  // Update m_proj here if needed, for example:
+  // m_proj = glm::perspective(glm::radians(45.0f), aspectRatio, nearPlane, farPlane);
   update();
 }

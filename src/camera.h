@@ -18,8 +18,8 @@ class camera
 {
 public:
     camera();
-    glm::mat4 getViewMatrix(const SceneCameraData& cameraMetaData) const;
-    glm::mat4 getProjMatrix(const SceneCameraData& cameraMetaData, double width, double height, int farPlane, int nearPlane);
+    static glm::mat4 getViewMatrix(const SceneCameraData& cameraMetaData);
+    static glm::mat4 getProjMatrix(const SceneCameraData& cameraMetaData, double width, double height, int farPlane, int nearPlane);
 
     // Struct which contains data for the camera of a scene
 
