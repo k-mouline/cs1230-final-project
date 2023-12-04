@@ -7,12 +7,13 @@
 #include "examplehelpers.h"
 #include "cube.h"
 #include "camera.h"
+#include "terraingenerator.h"
 
 GLRenderer::GLRenderer(QWidget *parent)
   : QOpenGLWidget(parent),
-    m_ka(0.1),
-    m_kd(0.8),
-    m_ks(1),
+    m_ka(0.5),
+    m_kd(0.5),
+    m_ks(0.5),
     m_angleX(6),
     m_angleY(0),
     m_zoom(2)
@@ -20,7 +21,7 @@ GLRenderer::GLRenderer(QWidget *parent)
 
 {
 
-  rebuildCameraMatrices(this->width(), this->height());
+    rebuildCameraMatrices(this->width(), this->height());
 
     m_prev_mouse_pos = glm::vec2(size().width()/2, size().height()/2);
     setMouseTracking(true);
@@ -213,9 +214,38 @@ void GLRenderer::paintGL()
 
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glBindVertexArray(m_sphere_vao);
+    for(const auto& shape : cubesVector){
+        glBindVertexArray(m_sphere_vao);
+        glUseProgram(m_phong_shader);
 
-    paintExampleGeometry();
+        // Set unif   orms for Phong vertex shader
+        auto modelLoc = glGetUniformLocation(m_phong_shader, "modelMatrix");
+        auto viewLoc  = glGetUniformLocation(m_phong_shader, "viewMatrix");
+        auto projLoc  = glGetUniformLocation(m_phong_shader, "projMatrix");
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &shape->getCTM()[0][0]);
+        glUniformMatrix4fv(viewLoc,  1, GL_FALSE, &m_view[0][0]);
+        glUniformMatrix4fv(projLoc,  1, GL_FALSE, &m_proj[0][0]);
+
+        // Set uniforms for Phong fragment shader
+        glUniform4f(glGetUniformLocation(m_phong_shader, "light.position"), 10, 0, 0, 1);
+        glUniform3f(glGetUniformLocation(m_phong_shader, "light.color"), 1, 1, 1);
+        glUniform1f(glGetUniformLocation(m_phong_shader, "ka"),m_ka);
+        glUniform1f(glGetUniformLocation(m_phong_shader, "kd"),m_kd);
+        glUniform1f(glGetUniformLocation(m_phong_shader, "ks"),m_ks);
+
+
+        // Draw
+        glBindVertexArray(m_sphere_vao);
+        glDrawArrays(GL_TRIANGLES, 0, m_cube_data.size() / 3);
+
+        // Unbind
+        glBindVertexArray(0);
+        glUseProgram(0);
+
+
+    }
+
+//    paintExampleGeometry();
 
     // Task 25: Bind the default framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, m_defaultFBO);
@@ -275,9 +305,19 @@ void GLRenderer::initializeExampleGeometry()
   glBindBuffer(GL_ARRAY_BUFFER, m_sphere_vbo);
 
   // Put data into the VBO
-  Cube* newCube = new Cube(glm::mat4());
-  m_sphere_data = newCube->initialize(10, 20);
-  glBufferData(GL_ARRAY_BUFFER, m_sphere_data.size() * sizeof(GLfloat), m_sphere_data.data(), GL_STATIC_DRAW);
+
+  std::vector<glm::mat4> transforms = TerrainGenerator::createTranslationMatrices();
+
+  for (const glm::mat4& matrix : transforms) {
+      Cube* newCube = new Cube(matrix);
+      cubesVector.push_back(newCube);
+      if(m_cube_data.empty()){
+          m_cube_data = newCube->initialize(10, 20);
+      }
+  };
+  // Translate the matrix by (1, 1, 1)
+
+  glBufferData(GL_ARRAY_BUFFER, m_cube_data.size() * sizeof(GLfloat), m_cube_data.data(), GL_STATIC_DRAW);
 
 
   // Generate and bind the VAO, with our VBO currently bound
@@ -314,16 +354,17 @@ void GLRenderer::paintExampleGeometry()
   glUniformMatrix4fv(projLoc,  1, GL_FALSE, &m_proj[0][0]);
 
   // Set uniforms for Phong fragment shader
-  glUniform4f(glGetUniformLocation(m_phong_shader, "light.position"), 10, 0, 0, 1);
+  glUniform4f(glGetUniformLocation(m_phong_shader, "light.position"), 10, 0, 25, 1);
   glUniform3f(glGetUniformLocation(m_phong_shader, "light.color"), 1, 1, 1);
+  glUniform3f(glGetUniformLocation(m_phong_shader, "light.direction"), 0, -1.0, 0.0);
+
   glUniform1f(glGetUniformLocation(m_phong_shader, "ka"),m_ka);
   glUniform1f(glGetUniformLocation(m_phong_shader, "kd"),m_kd);
   glUniform1f(glGetUniformLocation(m_phong_shader, "ks"),m_ks);
 
-
   // Draw
   glBindVertexArray(m_sphere_vao);
-  glDrawArrays(GL_TRIANGLES, 0, m_sphere_data.size() / 3);
+  glDrawArrays(GL_TRIANGLES, 0, m_cube_data.size() / 3);
 
   // Unbind
   glBindVertexArray(0);

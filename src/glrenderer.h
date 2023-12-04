@@ -12,7 +12,8 @@
 #include <QOpenGLWidget>
 #include <QMouseEvent>
 #include <QKeyEvent>
-
+#include "cube.h"
+#include "terraingenerator.h"
 
 
 class GLRenderer : public QOpenGLWidget
@@ -82,9 +83,11 @@ private:
     GLuint m_fbo_renderbuffer;
 
     GLuint m_phong_shader;
-    std::vector<float> m_sphere_data;
+    std::vector<float> m_cube_data;
     GLuint m_sphere_vbo;
     GLuint m_sphere_vao;
+
+    std::vector<Cube*> cubesVector = std::vector<Cube*>();;
 
     glm::mat4 m_model = glm::mat4(1);
     glm::mat4 m_view = glm::mat4(1);

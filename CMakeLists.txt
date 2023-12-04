@@ -31,6 +31,7 @@ add_executable(${PROJECT_NAME}
   src/examplehelpers.h
   src/camera.h src/camera.cpp
   src/cube.h src/cube.cpp
+  src/terraingenerator.h src/terraingenerator.cpp
 )
 
 # Specifies other files
