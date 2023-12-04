@@ -90,32 +90,6 @@ void GLRenderer::initializeGL()
   initializeExampleGeometry();
 
   // Task 3: Generate kitten texture
-  QString grassFilepath = QString("/Users/ajmroueh/Desktop/2023_Fall/Graphics/cs1230-final-project/grassTexture.jpeg");
-  // Task 1: Obtain image from filepath
-  m_image = QImage(grassFilepath);
-
-  // Task 2: Format image to fit OpenGL
-  m_image = m_image.convertToFormat(QImage::Format_RGBA8888).mirrored();
-
-  // Task 3: Generate kitten texture
-  glGenTextures(1, &m_grass_texture);
-
-  // Task 9: Set the active texture slot to texture slot 1
-  glActiveTexture(GL_TEXTURE1);
-
-  // Task 4: Bind kitten texture
-  glBindTexture(GL_TEXTURE_2D, m_grass_texture);
-
-  // Task 5: Load image into kitten texture
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_image.width(), m_image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, m_image.bits());
-
-
-  // Task 6: Set min and mag filters' interpolation mode to linear
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  // Task 7: Unbind kitten texture
-  glBindTexture(GL_TEXTURE_2D, 0);
 
 
   // Task 9: Set the active texture slot to texture slot 0
@@ -231,13 +205,12 @@ void GLRenderer::paintGL()
 
         // Set uniforms for Phong fragment shader
         glUniform4f(glGetUniformLocation(m_phong_shader, "light.position"), 10, 0, 0, 1);
-        glUniform3f(glGetUniformLocation(m_phong_shader, "light.color"), 1, 0, 0);
+        glUniform3f(glGetUniformLocation(m_phong_shader, "light.color"), 1, 1,1);
         glUniform4f(glGetUniformLocation(m_phong_shader, "light.direction"), 0, 0, -1.0,1.0f);
 
         glUniform1f(glGetUniformLocation(m_phong_shader, "ka"),m_ka);
         glUniform1f(glGetUniformLocation(m_phong_shader, "kd"),m_kd);
         glUniform1f(glGetUniformLocation(m_phong_shader, "ks"),m_ks);
-
 
         // Draw
         glBindVertexArray(m_cube_vao);
@@ -245,9 +218,8 @@ void GLRenderer::paintGL()
 
         // Unbind
         glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_2D, 0);
         glUseProgram(0);
-
-
     }
 
     // Task 25: Bind the default framebuffer
@@ -302,6 +274,33 @@ void GLRenderer::resizeGL(int w, int h){
 void GLRenderer::initializeExampleGeometry()
 {
   // Create geometry for a sphere
+    // Task 1: Obtain image from filepath
+    QString grassFilepath = QString("/Users/ajmroueh/Desktop/2023_Fall/Graphics/projects-ray-ajmroueh/scenefiles/illuminate/required/textures/topleft.png");
+
+    m_image = QImage(grassFilepath);
+
+    // Task 2: Format image to fit OpenGL
+    m_image = m_image.convertToFormat(QImage::Format_RGBA8888).mirrored();
+
+    // Task 3: Generate kitten texture
+    glGenTextures(1, &m_grass_texture);
+
+    // Task 9: Set the active texture slot to texture slot 1
+    glActiveTexture(GL_TEXTURE1);
+
+    // Task 4: Bind kitten texture
+    glBindTexture(GL_TEXTURE_2D, m_grass_texture);
+
+    // Task 5: Load image into kitten texture
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_image.width(), m_image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, m_image.bits());
+
+
+    // Task 6: Set min and mag filters' interpolation mode to linear
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Task 7: Unbind kitten texture
+    glBindTexture(GL_TEXTURE_2D, 0);
 
   // Generate and bind the VBO
   glGenBuffers(1, &m_cube_vbo);
@@ -337,11 +336,13 @@ void GLRenderer::initializeExampleGeometry()
   // Define VAO attributes
   glEnableVertexAttribArray(0); // handles Vertex positions
   glEnableVertexAttribArray(1); // handles Vertex normals
+  glEnableVertexAttribArray(2); // handles Vertex normals
 
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void*>(0)); // position
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void *>(3 * sizeof(GLfloat))); // normal
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void *>(6 * sizeof(GLfloat))); // texture uv coor
 
+  verifyVAO(m_cube_data, 2, 2, 8, reinterpret_cast<void *>(6 * sizeof(GLfloat)));
   // Unbind
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
