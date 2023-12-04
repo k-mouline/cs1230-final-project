@@ -247,8 +247,6 @@ void GLRenderer::paintGL()
 
     }
 
-//    paintExampleGeometry();
-
     // Task 25: Bind the default framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, m_defaultFBO);
 
@@ -345,39 +343,6 @@ void GLRenderer::initializeExampleGeometry()
   // Unbind
   glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void GLRenderer::paintExampleGeometry()
-{
-//  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glBindVertexArray(m_sphere_vao);
-
-  glUseProgram(m_phong_shader);
-
-  // Set unif   orms for Phong vertex shader
-  auto modelLoc = glGetUniformLocation(m_phong_shader, "modelMatrix");
-  auto viewLoc  = glGetUniformLocation(m_phong_shader, "viewMatrix");
-  auto projLoc  = glGetUniformLocation(m_phong_shader, "projMatrix");
-  glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &m_model[0][0]);
-  glUniformMatrix4fv(viewLoc,  1, GL_FALSE, &m_view[0][0]);
-  glUniformMatrix4fv(projLoc,  1, GL_FALSE, &m_proj[0][0]);
-
-  // Set uniforms for Phong fragment shader
-  glUniform4f(glGetUniformLocation(m_phong_shader, "light.position"), 10, 0, 25, 1);
-  glUniform3f(glGetUniformLocation(m_phong_shader, "light.color"), 1, 0, 0);
-  glUniform4f(glGetUniformLocation(m_phong_shader, "light.direction"),0.0, 0.0, -1.0,1.0f);
-
-  glUniform1f(glGetUniformLocation(m_phong_shader, "ka"),m_ka);
-  glUniform1f(glGetUniformLocation(m_phong_shader, "kd"),m_kd);
-  glUniform1f(glGetUniformLocation(m_phong_shader, "ks"),m_ks);
-
-  // Draw
-  glBindVertexArray(m_sphere_vao);
-  glDrawArrays(GL_TRIANGLES, 0, m_cube_data.size() / 3);
-
-  // Unbind
-  glBindVertexArray(0);
-  glUseProgram(0);
 }
 
 
