@@ -89,6 +89,8 @@ private:
     float movementSpeed = 13.0f;
     float m_rotationSpeed = 0.08f;
 
+    GLuint m_grass_texture;
+
 
     std::vector<Cube*> cubesVector = std::vector<Cube*>();;
 

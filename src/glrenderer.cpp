@@ -90,9 +90,24 @@ void GLRenderer::initializeGL()
   initializeExampleGeometry();
 
   // Task 3: Generate kitten texture
+  QString grassFilepath = QString("/Users/ajmroueh/Desktop/2023_Fall/Graphics/cs1230-final-project/grassTexture.jpeg");
+  // Task 1: Obtain image from filepath
+  m_image = QImage(grassFilepath);
 
-  // Task 9: Set the active texture slot to texture slot 0
-  glActiveTexture(GL_TEXTURE0);
+  // Task 2: Format image to fit OpenGL
+  m_image = m_image.convertToFormat(QImage::Format_RGBA8888).mirrored();
+
+  // Task 3: Generate kitten texture
+  glGenTextures(1, &m_grass_texture);
+
+  // Task 9: Set the active texture slot to texture slot 1
+  glActiveTexture(GL_TEXTURE1);
+
+  // Task 4: Bind kitten texture
+  glBindTexture(GL_TEXTURE_2D, m_grass_texture);
+
+  // Task 5: Load image into kitten texture
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_image.width(), m_image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, m_image.bits());
 
 
   // Task 6: Set min and mag filters' interpolation mode to linear
@@ -101,6 +116,14 @@ void GLRenderer::initializeGL()
 
   // Task 7: Unbind kitten texture
   glBindTexture(GL_TEXTURE_2D, 0);
+
+
+  // Task 9: Set the active texture slot to texture slot 0
+  glActiveTexture(GL_TEXTURE0);
+
+  // Task 6: Set min and mag filters' interpolation mode to linear
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   // Task 10: Set the texture.frag uniform for our texture
   // Activate the shader program
@@ -187,9 +210,16 @@ void GLRenderer::paintGL()
 
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
     for(const auto& shape : cubesVector){
+
         glBindVertexArray(m_cube_vao);
         glUseProgram(m_phong_shader);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, m_grass_texture);
+        glUniform1i(glGetUniformLocation(m_phong_shader, "myTexture"), 1);
 
         // Set uniforms for Phong vertex shader
         auto modelLoc = glGetUniformLocation(m_phong_shader, "modelMatrix");
@@ -310,7 +340,7 @@ void GLRenderer::initializeExampleGeometry()
 
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void*>(0)); // position
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void *>(3 * sizeof(GLfloat))); // normal
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void *>(6 * sizeof(GLfloat))); // texture uv coordinates.
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void *>(6 * sizeof(GLfloat))); // texture uv coor
 
   // Unbind
   glBindBuffer(GL_ARRAY_BUFFER, 0);
