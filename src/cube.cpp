@@ -56,7 +56,7 @@ Cube::Cube(glm::mat4 ctm){
         // First Triangle (counterclockwise order)
         insertVec3(m_vertexData, topRight);
         insertVec3(m_vertexData, normal);
-        m_vertexData.push_back(0.0);
+        m_vertexData.push_back(1.0);
         m_vertexData.push_back(0.0);
 
 
@@ -68,23 +68,23 @@ Cube::Cube(glm::mat4 ctm){
         insertVec3(m_vertexData, bottomLeft);
         insertVec3(m_vertexData, normal);
         m_vertexData.push_back(0.0);
-        m_vertexData.push_back(0.0);
+        m_vertexData.push_back(1.0);
 
         // Second Triangle (counterclockwise order)
         insertVec3(m_vertexData, topRight);
         insertVec3(m_vertexData, normal);
-        m_vertexData.push_back(0.0);
+        m_vertexData.push_back(1.0);
         m_vertexData.push_back(0.0);
 
         insertVec3(m_vertexData, bottomLeft);
         insertVec3(m_vertexData, normal);
         m_vertexData.push_back(0.0);
-        m_vertexData.push_back(0.0);
+        m_vertexData.push_back(1.0);
 
         insertVec3(m_vertexData, bottomRight);
         insertVec3(m_vertexData, normal);
-        m_vertexData.push_back(0.0);
-        m_vertexData.push_back(0.0);
+        m_vertexData.push_back(1.0);
+        m_vertexData.push_back(1.0);
 
 
 

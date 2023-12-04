@@ -300,7 +300,6 @@ void GLRenderer::initializeExampleGeometry()
 
   glBufferData(GL_ARRAY_BUFFER, m_cube_data.size() * sizeof(GLfloat), m_cube_data.data(), GL_STATIC_DRAW);
 
-
   // Generate and bind the VAO, with our VBO currently bound
   glGenVertexArrays(1, &m_cube_vao);
   glBindVertexArray(m_cube_vao);
@@ -309,9 +308,9 @@ void GLRenderer::initializeExampleGeometry()
   glEnableVertexAttribArray(0); // handles Vertex positions
   glEnableVertexAttribArray(1); // handles Vertex normals
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void*>(0));
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void *>(3 * sizeof(GLfloat)));
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void *>(6 * sizeof(GLfloat)));
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void*>(0)); // position
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void *>(3 * sizeof(GLfloat))); // normal
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void *>(6 * sizeof(GLfloat))); // texture uv coordinates.
 
   // Unbind
   glBindBuffer(GL_ARRAY_BUFFER, 0);
