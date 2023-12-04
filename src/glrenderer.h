@@ -73,22 +73,20 @@ private:
     SceneCameraData m_renderData;
     std::unordered_map<Qt::Key, bool> m_keyMap;         // Stores whether keys are pressed or not
 
-
-
     GLuint m_texture_shader;
     GLuint m_fullscreen_vbo;
     GLuint m_fullscreen_vao;
     QImage m_image;
-    GLuint m_kitten_texture;
     GLuint m_fbo;
     GLuint m_fbo_texture;
     GLuint m_fbo_renderbuffer;
 
     GLuint m_phong_shader;
     std::vector<float> m_cube_data;
-    GLuint m_sphere_vbo;
-    GLuint m_sphere_vao;
-    float movementSpeed = 8.0f;
+    GLuint m_cube_vbo;
+    GLuint m_cube_vao;
+    float movementSpeed = 13.0f;
+    float m_rotationSpeed = 0.08f;
 
 
     std::vector<Cube*> cubesVector = std::vector<Cube*>();;

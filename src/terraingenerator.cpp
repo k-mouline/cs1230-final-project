@@ -20,7 +20,8 @@ std::vector<glm::mat4> TerrainGenerator::createTranslationMatricesForChunk(int c
     // use FastNoiseLite library (TODO: replace with our own perlin noise)
     FastNoiseLite noise;
     noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-    noise.SetFrequency(0.05f);
+
+    noise.SetFrequency(0.02f); // can change this to get more mountainous terrain
 
     // want to center the chunk around the players current location
     float centerXOffset = (chunkSize * offset) / 2.0f;

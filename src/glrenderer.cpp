@@ -17,10 +17,7 @@ GLRenderer::GLRenderer(QWidget *parent)
     m_angleX(6),
     m_angleY(0),
     m_zoom(2)
-
-
 {
-
     rebuildCameraMatrices(this->width(), this->height());
 
     m_prev_mouse_pos = glm::vec2(size().width()/2, size().height()/2);
@@ -44,8 +41,8 @@ void GLRenderer::finish()
 {
   glDeleteProgram(m_texture_shader);
   glDeleteProgram(m_phong_shader);
-  glDeleteVertexArrays(1, &m_sphere_vao);
-  glDeleteBuffers(1, &m_sphere_vbo);
+  glDeleteVertexArrays(1, &m_cube_vao);
+  glDeleteBuffers(1, &m_cube_vbo);
   glDeleteVertexArrays(1, &m_fullscreen_vao);
   glDeleteBuffers(1, &m_fullscreen_vbo);
 
@@ -92,27 +89,10 @@ void GLRenderer::initializeGL()
   // Prepare example geometry for rendering later
   initializeExampleGeometry();
 
-  // Prepare filepath
-  QString kitten_filepath = QString(":/resources/images/kitten.png");
-
-  // Task 1: Obtain image from filepath
-  m_image = QImage(kitten_filepath);
-
-  // Task 2: Format image to fit OpenGL
-  m_image = m_image.convertToFormat(QImage::Format_RGBA8888).mirrored();
-
-  
   // Task 3: Generate kitten texture
-  glGenTextures(1, &m_kitten_texture);
 
   // Task 9: Set the active texture slot to texture slot 0
   glActiveTexture(GL_TEXTURE0);
-
-  // Task 4: Bind kitten texture
-  glBindTexture(GL_TEXTURE_2D, m_kitten_texture);
-
-  // Task 5: Load image into kitten texture
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_image.width(), m_image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, m_image.bits());
 
 
   // Task 6: Set min and mag filters' interpolation mode to linear
@@ -215,10 +195,10 @@ void GLRenderer::paintGL()
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     for(const auto& shape : cubesVector){
-        glBindVertexArray(m_sphere_vao);
+        glBindVertexArray(m_cube_vao);
         glUseProgram(m_phong_shader);
 
-        // Set unif   orms for Phong vertex shader
+        // Set uniforms for Phong vertex shader
         auto modelLoc = glGetUniformLocation(m_phong_shader, "modelMatrix");
         auto viewLoc  = glGetUniformLocation(m_phong_shader, "viewMatrix");
         auto projLoc  = glGetUniformLocation(m_phong_shader, "projMatrix");
@@ -228,7 +208,7 @@ void GLRenderer::paintGL()
 
         // Set uniforms for Phong fragment shader
         glUniform4f(glGetUniformLocation(m_phong_shader, "light.position"), 10, 0, 0, 1);
-        glUniform3f(glGetUniformLocation(m_phong_shader, "light.color"), 1, 1, 1);
+        glUniform3f(glGetUniformLocation(m_phong_shader, "light.color"), 1, 0, 0);
         glUniform4f(glGetUniformLocation(m_phong_shader, "light.direction"), 0, 0, -1.0,1.0f);
 
         glUniform1f(glGetUniformLocation(m_phong_shader, "ka"),m_ka);
@@ -237,7 +217,7 @@ void GLRenderer::paintGL()
 
 
         // Draw
-        glBindVertexArray(m_sphere_vao);
+        glBindVertexArray(m_cube_vao);
         glDrawArrays(GL_TRIANGLES, 0, m_cube_data.size() / 3);
 
         // Unbind
@@ -301,8 +281,8 @@ void GLRenderer::initializeExampleGeometry()
   // Create geometry for a sphere
 
   // Generate and bind the VBO
-  glGenBuffers(1, &m_sphere_vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, m_sphere_vbo);
+  glGenBuffers(1, &m_cube_vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, m_cube_vbo);
 
   // Put data into the VBO
 
@@ -329,8 +309,8 @@ void GLRenderer::initializeExampleGeometry()
 
 
   // Generate and bind the VAO, with our VBO currently bound
-  glGenVertexArrays(1, &m_sphere_vao);
-  glBindVertexArray(m_sphere_vao);
+  glGenVertexArrays(1, &m_cube_vao);
+  glBindVertexArray(m_cube_vao);
 
   // Define VAO attributes
   glEnableVertexAttribArray(0); // handles Vertex positions
@@ -406,7 +386,7 @@ void GLRenderer::mouseMoveEvent(QMouseEvent *event) {
       m_prev_mouse_pos = glm::vec2(posX, posY);
 
       // rotation speed from assignment
-      float rotationSpeed = 0.065;
+      float rotationSpeed = m_rotationSpeed;
 
       // Calculate the new front vector
       glm::mat4 rotator;
