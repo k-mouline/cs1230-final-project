@@ -229,6 +229,8 @@ void GLRenderer::paintGL()
         // Set uniforms for Phong fragment shader
         glUniform4f(glGetUniformLocation(m_phong_shader, "light.position"), 10, 0, 0, 1);
         glUniform3f(glGetUniformLocation(m_phong_shader, "light.color"), 1, 1, 1);
+        glUniform4f(glGetUniformLocation(m_phong_shader, "light.direction"), 0, 0, -1.0,1.0f);
+
         glUniform1f(glGetUniformLocation(m_phong_shader, "ka"),m_ka);
         glUniform1f(glGetUniformLocation(m_phong_shader, "kd"),m_kd);
         glUniform1f(glGetUniformLocation(m_phong_shader, "ks"),m_ks);
