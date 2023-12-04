@@ -306,15 +306,23 @@ void GLRenderer::initializeExampleGeometry()
 
   // Put data into the VBO
 
-  std::vector<glm::mat4> transforms = TerrainGenerator::createTranslationMatrices();
+  generator.updatePlayerPosition(cameraPos);
 
-  for (const glm::mat4& matrix : transforms) {
-      Cube* newCube = new Cube(matrix);
-      cubesVector.push_back(newCube);
-      if(m_cube_data.empty()){
-          m_cube_data = newCube->initialize(10, 20);
-      }
-  };
+  // get chunk data and iterate through the chunks that are currently in the render distance to populate cube vector
+  const auto& matrices = generator.getChunkMatrices();
+
+  for (const auto& chunkEntry : matrices) {
+        const auto& chunkMatrices = chunkEntry.second;
+
+        for (const glm::mat4& matrix : chunkMatrices) {
+            Cube* newCube = new Cube(matrix);
+            cubesVector.push_back(newCube);
+            if (m_cube_data.empty()) {
+                m_cube_data = newCube->initialize(10, 20);
+            }
+        }
+  }
+
   // Translate the matrix by (1, 1, 1)
 
   glBufferData(GL_ARRAY_BUFFER, m_cube_data.size() * sizeof(GLfloat), m_cube_data.data(), GL_STATIC_DRAW);
@@ -339,7 +347,6 @@ void GLRenderer::initializeExampleGeometry()
 
 void GLRenderer::paintExampleGeometry()
 {
-  // Paint the geometry for a sphere
 //  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glBindVertexArray(m_sphere_vao);
 
@@ -355,8 +362,8 @@ void GLRenderer::paintExampleGeometry()
 
   // Set uniforms for Phong fragment shader
   glUniform4f(glGetUniformLocation(m_phong_shader, "light.position"), 10, 0, 25, 1);
-  glUniform3f(glGetUniformLocation(m_phong_shader, "light.color"), 1, 1, 1);
-  glUniform3f(glGetUniformLocation(m_phong_shader, "light.direction"), 0, -1.0, 0.0);
+  glUniform3f(glGetUniformLocation(m_phong_shader, "light.color"), 1, 0, 0);
+  glUniform4f(glGetUniformLocation(m_phong_shader, "light.direction"),0.0, 0.0, -1.0,1.0f);
 
   glUniform1f(glGetUniformLocation(m_phong_shader, "ka"),m_ka);
   glUniform1f(glGetUniformLocation(m_phong_shader, "kd"),m_kd);
@@ -432,7 +439,7 @@ void GLRenderer::mouseMoveEvent(QMouseEvent *event) {
       m_prev_mouse_pos = glm::vec2(posX, posY);
 
       // rotation speed from assignment
-      float rotationSpeed = 0.05;
+      float rotationSpeed = 0.065;
 
       // Calculate the new front vector
       glm::mat4 rotator;
@@ -454,11 +461,11 @@ void GLRenderer::mouseMoveEvent(QMouseEvent *event) {
           cameraUp = glm::vec3(rotator * glm::vec4(cameraUp, 0.0));
       }
 
-      // Normalize vectors to prevent scaling issues
+      // normalize vectors
       cameraFront = glm::normalize(cameraFront);
       cameraUp = glm::normalize(cameraUp);
 
-      // Update camera with the new vectors
+      // update camera with the new vectors
       updateCamera();
       update();
 
@@ -471,17 +478,12 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
   m_elapsedTimer.restart();
 
   // speed of 5, multiply by deltatime to account for specs from handout
-  float speed = 5.0f;
+  float speed = movementSpeed;
   float distance = speed * deltaTime;
-
-  // get the front, right, and up vectors from camera data
-//  glm::vec3 cameraFront = glm::normalize(-m_renderData.look);
-//  glm::vec3 cameraRight = glm::normalize(glm::cross(glm::vec3(m_renderData.up), cameraFront));
 
   // if s is pressed move forward in look direction
   if (m_keyMap[Qt::Key_S]) {
       cameraPos -= distance * cameraFront;
-      std::cout << cameraPos.r << std::endl;
   }
 
   // if w is pressed move backwards in look direction
@@ -509,6 +511,29 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
   if (m_keyMap[Qt::Key_Control]) {
       cameraPos -= glm::vec3(0, 0, 1) * distance;
   }
+
+
+  // need to update player position in terrain generator so it knows what chunks to load
+  generator.updatePlayerPosition(cameraPos);
+
+  // clear the vector of cubes that are eventually rendered.
+  cubesVector.clear();
+
+  // get the hash map (which stores chunk data from the generator)
+  const auto& matrices = generator.getChunkMatrices();
+
+  // iterate through chunks and push them back of the cube vector (so we can render them)
+  for (const auto& chunkEntry : matrices) {
+      const auto& chunkMatrices = chunkEntry.second;
+      for (const glm::mat4& matrix : chunkMatrices) {
+          Cube* newCube = new Cube(matrix);
+          cubesVector.push_back(newCube);
+          if (m_cube_data.empty()) {
+                m_cube_data = newCube->initialize(10, 20);
+          }
+      }
+  }
+
   // recalculate viewMatrix with the updated parameters
   updateCamera();
   update(); // asks for a PaintGL() call to occur

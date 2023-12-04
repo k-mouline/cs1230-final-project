@@ -48,6 +48,8 @@ private:
     void timerEvent(QTimerEvent *event) override;
     void updateCamera();
 
+    TerrainGenerator generator;
+
     int m_devicePixelRatio;
     GLuint m_defaultFBO;
     int m_fbo_width;
@@ -86,6 +88,8 @@ private:
     std::vector<float> m_cube_data;
     GLuint m_sphere_vbo;
     GLuint m_sphere_vao;
+    float movementSpeed = 8.0f;
+
 
     std::vector<Cube*> cubesVector = std::vector<Cube*>();;
 
