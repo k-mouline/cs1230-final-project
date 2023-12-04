@@ -1,7 +1,7 @@
 #version 330 core
 
-in vec4 world_pos;
-in vec4 world_normal;
+in vec3 world_pos;
+in vec3 world_normal;
 in vec4 camera_pos;
 out vec4 fragColor;
 

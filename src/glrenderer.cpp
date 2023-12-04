@@ -126,12 +126,6 @@ void GLRenderer::initializeGL()
       1.0f, -1.0f, 0.0f,   1.0f, 0.0f
   };
 
-  // Task 12: Play around with different values!
-
-
-  // Task 13: Add UV coordinates
-
-
   // Generate and bind a VBO and a VAO for a fullscreen quad
   glGenBuffers(1, &m_fullscreen_vbo);
   glBindBuffer(GL_ARRAY_BUFFER, m_fullscreen_vbo);
@@ -140,10 +134,9 @@ void GLRenderer::initializeGL()
   glBindVertexArray(m_fullscreen_vao);
 
   // Task 14: modify the code below to add a second attribute to the vertex attribute array
-  // Task 14: modify the code below to add a second attribute to the vertex attribute array
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), nullptr);
-  glEnableVertexAttribArray(1);
+  glEnableVertexAttribArray(1); // Texture coordinate attribute
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
 
   // Unbind the fullscreen quad's VBO and VAO
@@ -298,7 +291,7 @@ void GLRenderer::initializeExampleGeometry()
             Cube* newCube = new Cube(matrix);
             cubesVector.push_back(newCube);
             if (m_cube_data.empty()) {
-                m_cube_data = newCube->initialize(10, 20);
+                m_cube_data = newCube->initialize(1, 1);
             }
         }
   }
@@ -316,13 +309,13 @@ void GLRenderer::initializeExampleGeometry()
   glEnableVertexAttribArray(0); // handles Vertex positions
   glEnableVertexAttribArray(1); // handles Vertex normals
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), reinterpret_cast<void*>(0));
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), reinterpret_cast<void *>(3 * sizeof(GLfloat)));
-
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void*>(0));
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void *>(3 * sizeof(GLfloat)));
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void *>(6 * sizeof(GLfloat)));
 
   // Unbind
-  glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
 }
 
 
@@ -476,7 +469,7 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
           Cube* newCube = new Cube(matrix);
           cubesVector.push_back(newCube);
           if (m_cube_data.empty()) {
-                m_cube_data = newCube->initialize(10, 20);
+                m_cube_data = newCube->initialize(2, 2);
           }
       }
   }
@@ -489,6 +482,5 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
 void GLRenderer::updateCamera() {
   m_view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
   // Update m_proj here if needed, for example:
-  // m_proj = glm::perspective(glm::radians(45.0f), aspectRatio, nearPlane, farPlane);
   update();
 }

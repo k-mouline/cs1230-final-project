@@ -12,6 +12,7 @@
 #include <QOpenGLWidget>
 #include <QMouseEvent>
 #include <QKeyEvent>
+#include <iostream>
 #include "cube.h"
 #include "terraingenerator.h"
 
@@ -100,4 +101,27 @@ private:
     float m_angleX;
     float m_angleY;
     float m_zoom;
+
+
+    void verifyVAO(std::vector<GLfloat> &triangleData, GLuint index, GLsizei size, GLsizei stride, const void* offset) {
+
+        int newStride = int(stride / 4);
+        int groupNum = 0;
+        int newOffset = static_cast<int>(reinterpret_cast<intptr_t>(offset)) / 4;
+
+        for (int i = newOffset; i < triangleData.size(); i = i + newStride) {
+            std::cout << "Group " << groupNum << " of Values for VAO index " << index << std::endl;
+            std::cout << "[";
+            for (auto j = i; j < i + size; ++j) {
+                if (j != i + size - 1) {
+                    std::cout << triangleData[j]<< ", ";
+                } else {
+                    std::cout << triangleData[j]<< "]" << std::endl;
+                }
+            }
+            groupNum = groupNum + 1;
+        }
+        std::cout << "" << std::endl;
+    }
+
 };

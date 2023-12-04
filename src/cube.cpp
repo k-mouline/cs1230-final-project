@@ -8,8 +8,9 @@ Cube::Cube(glm::mat4 ctm){
     std::vector<float> Cube::initialize(int param1, int param2) {
         // code that creates vertex data
         m_vertexData = std::vector<float>();
-        setVertexData();
         m_param1 = param1;
+
+        setVertexData();
 
         return m_vertexData;
 
@@ -23,6 +24,7 @@ Cube::Cube(glm::mat4 ctm){
         data.push_back(v.y);
         data.push_back(v.z);
     }
+
 
 
     void Cube::setVAO(GLuint &vao){
@@ -54,22 +56,36 @@ Cube::Cube(glm::mat4 ctm){
         // First Triangle (counterclockwise order)
         insertVec3(m_vertexData, topRight);
         insertVec3(m_vertexData, normal);
+        m_vertexData.push_back(0.0);
+        m_vertexData.push_back(0.0);
+
 
         insertVec3(m_vertexData, topLeft);
         insertVec3(m_vertexData, normal);
+        m_vertexData.push_back(0.0);
+        m_vertexData.push_back(0.0);
 
         insertVec3(m_vertexData, bottomLeft);
         insertVec3(m_vertexData, normal);
+        m_vertexData.push_back(0.0);
+        m_vertexData.push_back(0.0);
 
         // Second Triangle (counterclockwise order)
         insertVec3(m_vertexData, topRight);
         insertVec3(m_vertexData, normal);
+        m_vertexData.push_back(0.0);
+        m_vertexData.push_back(0.0);
 
         insertVec3(m_vertexData, bottomLeft);
         insertVec3(m_vertexData, normal);
+        m_vertexData.push_back(0.0);
+        m_vertexData.push_back(0.0);
 
         insertVec3(m_vertexData, bottomRight);
         insertVec3(m_vertexData, normal);
+        m_vertexData.push_back(0.0);
+        m_vertexData.push_back(0.0);
+
 
 
 
@@ -88,7 +104,7 @@ Cube::Cube(glm::mat4 ctm){
 
         // Use makeTile to create two triangles for the face
         makeTile(topLeft, topRight, bottomLeft, bottomRight);
-
+        m_param1 = 1.0f;
         // calculate step size
         float step = 1.0f/m_param1;
 

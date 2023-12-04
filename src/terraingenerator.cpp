@@ -21,7 +21,7 @@ std::vector<glm::mat4> TerrainGenerator::createTranslationMatricesForChunk(int c
     FastNoiseLite noise;
     noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
 
-    noise.SetFrequency(0.02f); // can change this to get more mountainous terrain
+    noise.SetFrequency(0.10f); // can change this to get more mountainous terrain
 
     // want to center the chunk around the players current location
     float centerXOffset = (chunkSize * offset) / 2.0f;
@@ -93,8 +93,6 @@ void TerrainGenerator::checkAndLoadChunks() {
         }
     }
 }
-
-
 
 // takes in player position (cameraPosition instance variable) and updates chunks based on that
 void TerrainGenerator::updatePlayerPosition(const glm::vec3& newPosition) {
