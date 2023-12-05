@@ -32,9 +32,6 @@ GLRenderer::GLRenderer(QWidget *parent)
     m_keyMap[Qt::Key_Space]   = false;
 
     m_proj = glm::perspective(glm::radians(45.0), 1.0 * this->width() / this->height(), 0.01,100.0);
-
-
-
 }
 
 void GLRenderer::finish()
@@ -88,9 +85,6 @@ void GLRenderer::initializeGL()
   
   // Prepare example geometry for rendering later
   initializeExampleGeometry();
-
-  // Task 3: Generate kitten texture
-
 
   // Task 9: Set the active texture slot to texture slot 0
   glActiveTexture(GL_TEXTURE0);
@@ -275,7 +269,7 @@ void GLRenderer::initializeExampleGeometry()
 {
   // Create geometry for a sphere
     // Task 1: Obtain image from filepath
-    QString grassFilepath = QString("/Users/ajmroueh/Desktop/2023_Fall/Graphics/cs1230-final-project/dirtTexture.png");
+    QString grassFilepath = QString("/Users/gavindhanda/Desktop/Desktop/School/Brown/2023-2024-Sophomore/First-Semester/CSCI-1230/Projects/Final/cs1230-final-project/grassTexture.jpeg");
 
     m_image = QImage(grassFilepath);
 
@@ -316,11 +310,15 @@ void GLRenderer::initializeExampleGeometry()
   for (const auto& chunkEntry : matrices) {
         const auto& chunkMatrices = chunkEntry.second;
 
-        for (const glm::mat4& matrix : chunkMatrices) {
-            Cube* newCube = new Cube(matrix);
-            cubesVector.push_back(newCube);
-            if (m_cube_data.empty()) {
-                m_cube_data = newCube->initialize(1, 1);
+        for (const auto& blockColumn : chunkMatrices) {
+            const auto& columnMatrices = blockColumn.second;
+
+            for (const glm::mat4& matrix : columnMatrices) {
+                Cube* newCube = new Cube(matrix);
+                cubesVector.push_back(newCube);
+                if (m_cube_data.empty()) {
+                    m_cube_data = newCube->initialize(1, 1);
+                }
             }
         }
   }
@@ -342,7 +340,6 @@ void GLRenderer::initializeExampleGeometry()
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void *>(3 * sizeof(GLfloat))); // normal
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void *>(6 * sizeof(GLfloat))); // texture uv coor
 
-  verifyVAO(m_cube_data, 2, 2, 8, reinterpret_cast<void *>(6 * sizeof(GLfloat)));
   // Unbind
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
@@ -365,7 +362,7 @@ void GLRenderer::rebuildCameraMatrices(int w, int h)
   eye *= m_zoom;
 
   // Set cameraPos to the calculated eye position
-  cameraPos = eye;
+  cameraPos = glm::vec3(0, 0, eye.z);
 
   // Calculate the direction the camera is facing
   cameraFront = glm::normalize(glm::vec3(0, 0, 0) - eye); // Assuming the camera is looking at (0,0,0)
@@ -416,7 +413,7 @@ void GLRenderer::mouseMoveEvent(QMouseEvent *event) {
 
       // Rotate around the vertical (world Y) axis
       if (deltaX != 0) {
-          float angleX = deltaX * rotationSpeed;
+          float angleX = -deltaX * rotationSpeed;
           rotator = glm::rotate(glm::mat4(1.0f), glm::radians(angleX), glm::vec3(0, 0, 1));
           cameraFront = glm::vec3(rotator * glm::vec4(cameraFront, 0.0));
           cameraUp = glm::vec3(rotator * glm::vec4(cameraUp, 0.0));
@@ -425,7 +422,7 @@ void GLRenderer::mouseMoveEvent(QMouseEvent *event) {
       // Rotate around the horizontal axis (cross product of camera's up and front)
       if (deltaY != 0) {
           glm::vec3 right = glm::normalize(glm::cross(cameraFront, cameraUp));
-          float angleY = deltaY * rotationSpeed;
+          float angleY = -deltaY * rotationSpeed;
           rotator = glm::rotate(glm::mat4(1.0f), glm::radians(angleY), right);
           cameraFront = glm::vec3(rotator * glm::vec4(cameraFront, 0.0));
           cameraUp = glm::vec3(rotator * glm::vec4(cameraUp, 0.0));
@@ -451,39 +448,63 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
   float speed = movementSpeed;
   float distance = speed * deltaTime;
 
-  // if s is pressed move forward in look direction
+  float currentHeight = cameraPos.z;
+
+  // if s is pressed move backwards in x-y look direction
   if (m_keyMap[Qt::Key_S]) {
-      cameraPos -= distance * cameraFront;
+      glm::vec3 newPos = cameraPos - distance * glm::normalize(glm::vec3(cameraFront.x, cameraFront.y, 0.f));
+      float newHeight = generator.getGroundHeight(newPos);
+      if (newHeight <= currentHeight) {
+          cameraPos = newPos;
+      }
   }
 
-  // if w is pressed move backwards in look direction
+  // if w is pressed move forwards in x-y look direction
   if (m_keyMap[Qt::Key_W]) {
-
-      cameraPos += distance * cameraFront;
-
+      glm::vec3 newPos = cameraPos + distance * glm::normalize(glm::vec3(cameraFront.x, cameraFront.y, 0.f));
+      float newHeight = generator.getGroundHeight(newPos);
+      if (newHeight <= currentHeight) {
+          cameraPos = newPos;
+      }
   }
+
   // if A is pressed move to the left of the cross product of up and front vectors
   if (m_keyMap[Qt::Key_A]) {
-      cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * distance;
+      glm::vec3 newPos = cameraPos - glm::normalize(glm::cross(cameraFront, cameraUp)) * distance;
+      float newHeight = generator.getGroundHeight(newPos);
+      if (newHeight <= currentHeight) {
+          cameraPos = newPos;
+      }
 
   }
   // if D is pressed move to the right of the cross product of up and front vectors
   if (m_keyMap[Qt::Key_D]) {
-      cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * distance;
-
+      glm::vec3 newPos = cameraPos + glm::normalize(glm::cross(cameraFront, cameraUp)) * distance;
+      float newHeight = generator.getGroundHeight(newPos);
+      if (newHeight <= currentHeight) {
+          cameraPos = newPos;
+      }
   }
   // translate camera among world space vector up
   if (m_keyMap[Qt::Key_Space]) {
-      cameraPos += glm::vec3(0, 0, 1) * distance;
-
-  }
-  // translate camera among world space vector down
-  if (m_keyMap[Qt::Key_Control]) {
-      cameraPos -= glm::vec3(0, 0, 1) * distance;
+      if (!inTheAir){
+          inTheAir = true;
+          velocity = reboundVelocity;
+      }
   }
 
+  // Jump movement stuff
+  float groundPosition = generator.getGroundHeight(cameraPos);
+  velocity = fmax(velocity + acceleration*deltaTime, minimumVelocity);
+  float newZPosition = cameraPos.z + velocity*deltaTime;
+  if (newZPosition < groundPosition) {
+      velocity = 0;
+      inTheAir = false;
+      cameraPos.z = groundPosition;
+  }
+  else cameraPos.z = newZPosition;
 
-  // need to update player position in terrain generator so it knows what chunks to load
+  // update player position in terrain generator so it knows what chunks to load
   generator.updatePlayerPosition(cameraPos);
 
   // clear the vector of cubes that are eventually rendered.
@@ -495,11 +516,16 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
   // iterate through chunks and push them back of the cube vector (so we can render them)
   for (const auto& chunkEntry : matrices) {
       const auto& chunkMatrices = chunkEntry.second;
-      for (const glm::mat4& matrix : chunkMatrices) {
-          Cube* newCube = new Cube(matrix);
-          cubesVector.push_back(newCube);
-          if (m_cube_data.empty()) {
-                m_cube_data = newCube->initialize(2, 2);
+
+      for (const auto& blockColumn : chunkMatrices) {
+          const auto& columnMatrices = blockColumn.second;
+
+          for (const glm::mat4& matrix : columnMatrices) {
+              Cube* newCube = new Cube(matrix);
+              cubesVector.push_back(newCube);
+              if (m_cube_data.empty()) {
+                  m_cube_data = newCube->initialize(2, 2);
+              }
           }
       }
   }
