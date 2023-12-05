@@ -40,6 +40,7 @@ qt_add_resources(${PROJECT_NAME} "Resources"
   "/"
   FILES
   resources/images/kitten.png
+  resources/images/minecraftTextureMap.png
   resources/shaders/phong.vert
   resources/shaders/phong.frag
   resources/shaders/texture.vert

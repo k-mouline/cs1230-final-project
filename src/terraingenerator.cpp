@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "FastNoiseLite.h"  // Include FastNoiseLite
+#include "src/cube.h"
 #include <random>
 #include <iostream>
 
@@ -52,11 +53,12 @@ std::map<std::pair<int, int>, std::vector<glm::mat4>> TerrainGenerator::createTr
             }
         }
     }
+
     return matrices;
 }
 
 // based on the current camera position and render distance loads and unloads chunks
-void TerrainGenerator::checkAndLoadChunks() {
+bool TerrainGenerator::checkAndLoadChunks() {
     // Adjust position for the fact that the original chunk is centered on the player.
     float adjustedPositionX = playerPosition.x + (playerPosition.x / abs(playerPosition.x)) * (float) chunkSize / 2.f;
     float adjustedPositionY = playerPosition.y + (playerPosition.y / abs(playerPosition.y)) * (float) chunkSize / 2.f;
@@ -95,12 +97,31 @@ void TerrainGenerator::checkAndLoadChunks() {
             }
         }
     }
+    return (chunksToUnload.size() != 0); // check and load chunks returns TRUE if there are chunks to unload
 }
 
 // takes in player position (cameraPosition instance variable) and updates chunks based on that
-void TerrainGenerator::updatePlayerPosition(const glm::vec3& newPosition) {
+std::vector<Cube*> TerrainGenerator::updatePlayerPosition(const glm::vec3& newPosition, std::vector<Cube*> oldCubes, bool isFirst) {
     playerPosition = newPosition;
-    checkAndLoadChunks();
+
+    std::vector<Cube*> cubesVector = oldCubes;
+    // should return true or false
+    if(checkAndLoadChunks() || isFirst){
+        cubesVector.clear();
+          for (const auto& chunkEntry : chunkMatrices) {
+              const auto& chunkMatrix = chunkEntry.second;
+
+              for (const auto& blockColumn : chunkMatrix) {
+                  const auto& columnMatrices = blockColumn.second;
+
+                  for (const glm::mat4& matrix : columnMatrices) {
+                      Cube* newCube = new Cube(matrix);
+                      cubesVector.push_back(newCube);
+                  }
+              }
+          }
+    }
+    return cubesVector;
 }
 
 // finds the z value of the block underneath the camera position passed in.

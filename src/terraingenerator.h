@@ -1,5 +1,6 @@
 #ifndef TERRAINGENERATOR_H
 #define TERRAINGENERATOR_H
+#include "src/cube.h"
 #include <vector>
 #include <glm/glm.hpp>
 #include <map>
@@ -17,8 +18,8 @@ public:
     glm::vec3 playerPosition;
     int renderDistance = 2; // Number of chunks to render in each direction from the player
     std::map<std::pair<int, int>, std::map<std::pair<int, int>, std::vector<glm::mat4>>> chunkMatrices;
-    void updatePlayerPosition(const glm::vec3& newPosition);
-    void checkAndLoadChunks();
+    std::vector<Cube*> updatePlayerPosition(const glm::vec3& newPosition, std::vector<Cube*> oldCubes, bool isFirst);
+    bool checkAndLoadChunks();
     const std::map<std::pair<int, int>, std::map<std::pair<int, int>, std::vector<glm::mat4>>>& getChunkMatrices() const;
 
     // Takes in the camera position and gets the height of the terrain at that point.

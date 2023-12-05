@@ -85,6 +85,8 @@ void GLRenderer::initializeGL()
   m_phong_shader   = ShaderLoader::createShaderProgram(":/resources/shaders/phong.vert", ":/resources/shaders/phong.frag");
   
   // Prepare example geometry for rendering later
+  Cube* newCube = new Cube(glm::mat4(1.0f));
+  m_cube_data = newCube->initialize(1, 1, 0.0f/16.0f,0.0f/16.0f);
   initializeExampleGeometry();
 
   // Task 9: Set the active texture slot to texture slot 0
@@ -206,6 +208,7 @@ void GLRenderer::paintGL()
         glUniform1f(glGetUniformLocation(m_phong_shader, "ks"),m_ks);
         // deciding which texture based off of layers
         float z_val = glm::vec3(shape->getCTM() * glm::vec4(0.5f, 0.5f, 0.5f, 1.f))[2];
+        float y_val = glm::vec3(shape->getCTM() * glm::vec4(0.5f, 0.5f, 0.5f, 1.f))[1];
         if (z_val < -18){
             int i = shape->getID();
             if (i == 0){
@@ -231,8 +234,7 @@ void GLRenderer::paintGL()
         glDrawArrays(GL_TRIANGLES, 0, 6); // draw top face
 
         if (z_val < -18){
-            int i = shape->getID();
-            if (i == 0){
+            if (y_val < -15){
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::cobblestone].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::cobblestone].y);
             }
@@ -310,7 +312,7 @@ void GLRenderer::initializeExampleGeometry()
 {
   // Create geometry for a sphere
     // Task 1: Obtain image from filepath
-    QString grassFilepath = QString("/Users/karim/Desktop/f23/cs1230/cs1230-final-project/minecraftTextureMap.png");
+    QString grassFilepath = QString(":/resources/images/minecraftTextureMap.png");
 
     m_image = QImage(grassFilepath);
 
@@ -343,26 +345,7 @@ void GLRenderer::initializeExampleGeometry()
 
   // Put data into the VBO
 
-  generator.updatePlayerPosition(cameraPos);
-
-  // get chunk data and iterate through the chunks that are currently in the render distance to populate cube vector
-  const auto& matrices = generator.getChunkMatrices();
-
-  for (const auto& chunkEntry : matrices) {
-        const auto& chunkMatrices = chunkEntry.second;
-
-        for (const auto& blockColumn : chunkMatrices) {
-            const auto& columnMatrices = blockColumn.second;
-
-            for (const glm::mat4& matrix : columnMatrices) {
-                Cube* newCube = new Cube(matrix);
-                cubesVector.push_back(newCube);
-                if (m_cube_data.empty()) {
-                    m_cube_data = newCube->initialize(1, 1, 0.0f/16.0f,0.0f/16.0f);
-                }
-            }
-        }
-  }
+  cubesVector = generator.updatePlayerPosition(cameraPos, std::vector<Cube*>(), true);
 
   // Translate the matrix by (1, 1, 1)
 
@@ -546,30 +529,7 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
   else cameraPos.z = newZPosition;
 
   // update player position in terrain generator so it knows what chunks to load
-  generator.updatePlayerPosition(cameraPos);
-
-  // clear the vector of cubes that are eventually rendered.
-  cubesVector.clear();
-
-  // get the hash map (which stores chunk data from the generator)
-  const auto& matrices = generator.getChunkMatrices();
-
-  // iterate through chunks and push them back of the cube vector (so we can render them)
-  for (const auto& chunkEntry : matrices) {
-      const auto& chunkMatrices = chunkEntry.second;
-
-      for (const auto& blockColumn : chunkMatrices) {
-          const auto& columnMatrices = blockColumn.second;
-
-          for (const glm::mat4& matrix : columnMatrices) {
-              Cube* newCube = new Cube(matrix);
-              cubesVector.push_back(newCube);
-              if (m_cube_data.empty()) {
-                  m_cube_data = newCube->initialize(1,1,0.0,0.0/16.0);
-              }
-          }
-      }
-  }
+  cubesVector = generator.updatePlayerPosition(cameraPos, cubesVector, false);
 
   // recalculate viewMatrix with the updated parameters
   updateCamera();
