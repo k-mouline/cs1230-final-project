@@ -30,6 +30,8 @@ public:
                   glm::vec3 bottomLeft,
                   glm::vec3 bottomRight);
 
+    int getID();
+
 
     float texCoord1;
     float texCoord2;
@@ -43,6 +45,7 @@ private:
         int m_param2;
         glm::mat4 transformationMatrix;
         std::vector<float> m_vertexData;
+        int id;
 
 };
 

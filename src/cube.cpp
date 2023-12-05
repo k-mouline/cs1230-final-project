@@ -128,12 +128,12 @@ std::vector<float> Cube::initialize(int param1, int param2, float texCoord1Top, 
     }
 
     void Cube::setVertexData() {
-
+        // top
         makeFace(glm::vec3(-0.5f,  0.5f, 0.5f),
                  glm::vec3( 0.5f,  0.5f, 0.5f),
                  glm::vec3(-0.5f, -0.5f, 0.5f),
                  glm::vec3( 0.5f, -0.5f, 0.5f));
-
+        // bottom
         makeFace(glm::vec3( 0.5f,  0.5f, -0.5f),
                  glm::vec3(-0.5f,  0.5f, -0.5f),
                  glm::vec3( 0.5f, -0.5f, -0.5f),
@@ -144,10 +144,10 @@ std::vector<float> Cube::initialize(int param1, int param2, float texCoord1Top, 
                  glm::vec3(-0.5f,  0.5f, 0.5f),
                  glm::vec3( 0.5f,  0.5f, 0.5f));
 
-        makeFace(glm::vec3(0.5f, 0.5f, 0.5f),
-                 glm::vec3(0.5f, 0.5f, -0.5f),
-                 glm::vec3(0.5f, -0.5f, 0.5f),
-                 glm::vec3(0.5f, -0.5f, -0.5f));
+        makeFace(glm::vec3(0.5f, 0.5f, 0.5f), // top left -> top right
+                 glm::vec3(0.5f, 0.5f, -0.5f), // top right -> bottom right
+                 glm::vec3(0.5f, -0.5f, 0.5f), // bottom left -> top left
+                 glm::vec3(0.5f, -0.5f, -0.5f)); // bottom right -> bottom left
 
         makeFace(glm::vec3(-0.5f,  -0.5f, 0.5f),
                  glm::vec3(0.5f, -0.5f, 0.5f),
@@ -158,5 +158,10 @@ std::vector<float> Cube::initialize(int param1, int param2, float texCoord1Top, 
                  glm::vec3(-0.5f, 0.5f, 0.5f),
                  glm::vec3(-0.5f,  -0.5f, -0.5f),
                  glm::vec3(-0.5f, -0.5f, 0.5f));
+
+    }
+
+    int Cube::getID(){
+        return id;
     }
 

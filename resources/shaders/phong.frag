@@ -21,10 +21,12 @@ uniform float ks;
 
 uniform sampler2D myTexture;
 
+uniform float xOffset;
+uniform float yOffset;
 
 void main() {
     float blend = 1.0f;
-    vec3 textureColor = vec3(texture(myTexture, fragUV));
+    vec3 textureColor = vec3(texture(myTexture, vec2(fragUV.x + xOffset, fragUV.y + yOffset)));
     vec3 toCamera = normalize(vec3(camera_pos) - vec3(world_pos));
 //    vec3 toLight = normalize(vec3(light.position - world_pos));
     vec3 toLight = vec3(normalize(-light.direction));

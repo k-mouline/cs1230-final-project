@@ -13,6 +13,7 @@
 #include <QMouseEvent>
 #include <QKeyEvent>
 #include <iostream>
+#include <unordered_map>
 #include "cube.h"
 #include "terraingenerator.h"
 
@@ -96,6 +97,9 @@ private:
 
     GLuint m_grass_texture;
 
+    std::map<int, glm::vec2> textureMap;
+    void initTextureMap();
+
     std::vector<Cube*> cubesVector = std::vector<Cube*>();
 
     glm::mat4 m_model = glm::mat4(1);
@@ -107,4 +111,18 @@ private:
     float m_angleX;
     float m_angleY;
     float m_zoom;
+
+    enum blockType {
+        gravel = 0,
+        stone = 1,
+        dirt = 2,
+        grassSide = 3,
+        woodPlank = 4,
+        cobblestone = 16,
+        bedrock = 17,
+        sand = 18,
+        logSide = 20,
+        logCap = 21,
+        grassTop = 39
+    };
 };

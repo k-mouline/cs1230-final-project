@@ -66,6 +66,7 @@ void GLRenderer::initializeGL()
   m_screen_height = size().height() * m_devicePixelRatio;
   m_fbo_width = m_screen_width;
   m_fbo_height = m_screen_height;
+  initTextureMap();
 
   // GLEW is a library which provides an implementation for the OpenGL API
   // Here, we are setting it up
@@ -179,9 +180,7 @@ void GLRenderer::paintGL()
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
     for(const auto& shape : cubesVector){
-
         glBindVertexArray(m_cube_vao);
         glUseProgram(m_phong_shader);
 
@@ -205,11 +204,53 @@ void GLRenderer::paintGL()
         glUniform1f(glGetUniformLocation(m_phong_shader, "ka"),m_ka);
         glUniform1f(glGetUniformLocation(m_phong_shader, "kd"),m_kd);
         glUniform1f(glGetUniformLocation(m_phong_shader, "ks"),m_ks);
+        // deciding which texture based off of layers
+        float z_val = glm::vec3(shape->getCTM() * glm::vec4(0.5f, 0.5f, 0.5f, 1.f))[2];
+        if (z_val < -18){
+            int i = shape->getID();
+            if (i == 0){
+                glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::cobblestone].x);
+                glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::cobblestone].y);
+            }
+            else {
+                glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::stone].x);
+                glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::stone].y);
+            }
+        }
+        else if (z_val >= -18 && z_val < -15){
+            glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::sand].x);
+            glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::sand].y);
+        }
+        else {
+            glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::grassTop].x);
+            glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::grassTop].y);
+        }
 
         // Draw
         glBindVertexArray(m_cube_vao);
-        glDrawArrays(GL_TRIANGLES, 0, m_cube_data.size() / 3);
+        glDrawArrays(GL_TRIANGLES, 0, 6); // draw top face
 
+        if (z_val < -18){
+            int i = shape->getID();
+            if (i == 0){
+                glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::cobblestone].x);
+                glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::cobblestone].y);
+            }
+            else {
+                glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::stone].x);
+                glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::stone].y);
+            }
+        }
+        else if (z_val >= -18 && z_val < -15){
+            glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::sand].x);
+            glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::sand].y);
+        }
+        else {
+            glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::dirt].x);
+            glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::dirt].y);
+        }
+
+        glDrawArrays(GL_TRIANGLES, 6, (m_cube_data.size() / 8) - 6); // draw remaining faces
         // Unbind
         glBindVertexArray(0);
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -269,7 +310,7 @@ void GLRenderer::initializeExampleGeometry()
 {
   // Create geometry for a sphere
     // Task 1: Obtain image from filepath
-    QString grassFilepath = QString("/Users/ajmroueh/Desktop/2023_Fall/Graphics/cs1230-final-project/minecraftTextureMap.png");
+    QString grassFilepath = QString("/Users/karim/Desktop/f23/cs1230/cs1230-final-project/minecraftTextureMap.png");
 
     m_image = QImage(grassFilepath);
 
@@ -317,7 +358,7 @@ void GLRenderer::initializeExampleGeometry()
                 Cube* newCube = new Cube(matrix);
                 cubesVector.push_back(newCube);
                 if (m_cube_data.empty()) {
-                    m_cube_data = newCube->initialize(1, 1, 0.0f/16.0f,14.0f/16.0f);
+                    m_cube_data = newCube->initialize(1, 1, 0.0f/16.0f,0.0f/16.0f);
                 }
             }
         }
@@ -524,7 +565,7 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
               Cube* newCube = new Cube(matrix);
               cubesVector.push_back(newCube);
               if (m_cube_data.empty()) {
-                  m_cube_data = newCube->initialize(1,1,0.0,4.0/16.0);
+                  m_cube_data = newCube->initialize(1,1,0.0,0.0/16.0);
               }
           }
       }
@@ -540,3 +581,12 @@ void GLRenderer::updateCamera() {
   // Update m_proj here if needed, for example:
   update();
 }
+
+void GLRenderer::initTextureMap(){
+  for (float row = 0; row < 16; row++){
+      for (float col = 0; col < 16; col++){
+          textureMap[(row * 16) + col] = glm::vec2((col / 16.f), (15 - row) / 16.f);
+      }
+  }
+}
+

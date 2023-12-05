@@ -15,7 +15,7 @@ void main()
 {
     fragColor = vec4(1);
     // Task 17: Set fragColor using the sampler2D at the UV coordinate
-    fragColor = texture(myTexture, fragUV);
+    fragColor = texture(myTexture, vec2(fragUV));
     // Task 33: Invert fragColor's r, g, and b color channels if your bool is true
     if(postProcessing){
                 fragColor.x = fragColor.x;
