@@ -86,13 +86,17 @@ private:
     std::vector<float> m_cube_data;
     GLuint m_cube_vbo;
     GLuint m_cube_vao;
-    float movementSpeed = 13.0f;
-    float m_rotationSpeed = 0.08f;
+    float movementSpeed = 5.f;
+    float m_rotationSpeed = 0.2f;
+    float velocity = 0;
+    float reboundVelocity = 8;
+    float acceleration = -20;
+    float minimumVelocity = -12;
+    bool inTheAir = false;
 
     GLuint m_grass_texture;
 
-
-    std::vector<Cube*> cubesVector = std::vector<Cube*>();;
+    std::vector<Cube*> cubesVector = std::vector<Cube*>();
 
     glm::mat4 m_model = glm::mat4(1);
     glm::mat4 m_view = glm::mat4(1);
@@ -103,27 +107,4 @@ private:
     float m_angleX;
     float m_angleY;
     float m_zoom;
-
-
-    void verifyVAO(std::vector<GLfloat> &triangleData, GLuint index, GLsizei size, GLsizei stride, const void* offset) {
-
-        int newStride = int(stride / 4);
-        int groupNum = 0;
-        int newOffset = static_cast<int>(reinterpret_cast<intptr_t>(offset)) / 4;
-
-        for (int i = newOffset; i < triangleData.size(); i = i + newStride) {
-            std::cout << "Group " << groupNum << " of Values for VAO index " << index << std::endl;
-            std::cout << "[";
-            for (auto j = i; j < i + size; ++j) {
-                if (j != i + size - 1) {
-                    std::cout << triangleData[j]<< ", ";
-                } else {
-                    std::cout << triangleData[j]<< "]" << std::endl;
-                }
-            }
-            groupNum = groupNum + 1;
-        }
-        std::cout << "" << std::endl;
-    }
-
 };
