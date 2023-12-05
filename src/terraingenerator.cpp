@@ -19,7 +19,7 @@ std::map<std::pair<int, int>, std::vector<glm::mat4>> TerrainGenerator::createTr
     FastNoiseLite noise;
     noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
 
-    noise.SetFrequency(0.1f); // can change this to get more mountainous terrain
+    noise.SetFrequency(0.03f); // can change this to get more mountainous terrain
 
     // want to center the chunk around the players current location
     float centerXOffset = (chunkSize * offset) / 2.0f;

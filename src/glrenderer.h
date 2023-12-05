@@ -86,7 +86,7 @@ private:
     std::vector<float> m_cube_data;
     GLuint m_cube_vbo;
     GLuint m_cube_vao;
-    float movementSpeed = 5.f;
+    float movementSpeed = 8.f;
     float m_rotationSpeed = 0.2f;
     float velocity = 0;
     float reboundVelocity = 8;

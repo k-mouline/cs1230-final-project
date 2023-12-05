@@ -12,7 +12,7 @@ class Cube {
 
 public:
     Cube(glm::mat4 ctm);
-    std::vector<float> initialize(int param1, int param2);
+    std::vector<float> initialize(int param1, int param2, float texCoord1Top, float texCoord2Top);
     void insertVec3(std::vector<float> &data, glm::vec3 v);
     void setVAO(GLuint &vao);
     GLuint getVAO();
@@ -31,7 +31,10 @@ public:
                   glm::vec3 bottomRight);
 
 
-
+    float texCoord1;
+    float texCoord2;
+    float texCoord3;
+    float texCoord4;
 
 private:
         GLuint VAO, VBO;

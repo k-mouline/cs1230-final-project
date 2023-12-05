@@ -269,7 +269,7 @@ void GLRenderer::initializeExampleGeometry()
 {
   // Create geometry for a sphere
     // Task 1: Obtain image from filepath
-    QString grassFilepath = QString("/Users/ajmroueh/Desktop/2023_Fall/Graphics/cs1230-final-project/grassTexture.jpeg");
+    QString grassFilepath = QString("/Users/ajmroueh/Desktop/2023_Fall/Graphics/cs1230-final-project/minecraftTextureMap.png");
 
     m_image = QImage(grassFilepath);
 
@@ -317,7 +317,7 @@ void GLRenderer::initializeExampleGeometry()
                 Cube* newCube = new Cube(matrix);
                 cubesVector.push_back(newCube);
                 if (m_cube_data.empty()) {
-                    m_cube_data = newCube->initialize(1, 1);
+                    m_cube_data = newCube->initialize(1, 1, 0.0f/16.0f,14.0f/16.0f);
                 }
             }
         }
@@ -524,7 +524,7 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
               Cube* newCube = new Cube(matrix);
               cubesVector.push_back(newCube);
               if (m_cube_data.empty()) {
-                  m_cube_data = newCube->initialize(2, 2);
+                  m_cube_data = newCube->initialize(1,1,0.0,4.0/16.0);
               }
           }
       }
