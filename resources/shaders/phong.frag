@@ -23,7 +23,7 @@ uniform sampler2D myTexture;
 
 
 void main() {
-    float blend = 0.5f;
+    float blend = 1.0f;
     vec3 textureColor = vec3(texture(myTexture, fragUV));
     vec3 toCamera = normalize(vec3(camera_pos) - vec3(world_pos));
 //    vec3 toLight = normalize(vec3(light.position - world_pos));
@@ -36,5 +36,5 @@ void main() {
    float specular = pow(clamp(dot(toCamera, reflectedLight),0,100), 30);
 
    fragColor = vec4(vec3((kd*(1.0f-blend)+textureColor*blend)*light.color*diffuse + ka*light.color + ks * specular*light.color),1);
-   fragColor = vec4(textureColor,1.0);
+//   fragColor = vec4(textureColor,1.0);
 }
