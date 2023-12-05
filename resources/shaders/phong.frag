@@ -35,6 +35,6 @@ void main() {
 
    float specular = pow(clamp(dot(toCamera, reflectedLight),0,100), 30);
 
-   fragColor = vec4(vec3((kd*(1.0f-blend)+textureColor*blend)*light.color*diffuse + ka*light.color + ks * specular*light.color),1);
+   fragColor = vec4(vec3((kd*(1.0f-blend)+textureColor*blend)*light.color*diffuse + ka*light.color*textureColor + ks * specular*light.color),1);
 //   fragColor = vec4(textureColor,1.0);
 }

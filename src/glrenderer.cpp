@@ -269,7 +269,7 @@ void GLRenderer::initializeExampleGeometry()
 {
   // Create geometry for a sphere
     // Task 1: Obtain image from filepath
-    QString grassFilepath = QString("/Users/gavindhanda/Desktop/Desktop/School/Brown/2023-2024-Sophomore/First-Semester/CSCI-1230/Projects/Final/cs1230-final-project/grassTexture.jpeg");
+    QString grassFilepath = QString("/Users/ajmroueh/Desktop/2023_Fall/Graphics/cs1230-final-project/grassTexture.jpeg");
 
     m_image = QImage(grassFilepath);
 
