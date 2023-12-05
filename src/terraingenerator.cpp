@@ -3,25 +3,23 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "FastNoiseLite.h"  // Include FastNoiseLite
 #include <random>
+#include <iostream>
 
 TerrainGenerator::TerrainGenerator(){
-
-
 }
 
 // method takes in the current chunk location (using ints) and using these as offsets
-std::vector<glm::mat4> TerrainGenerator::createTranslationMatricesForChunk(int chunkX, int chunkY) {
-    std::vector<glm::mat4> matrices;
+std::map<std::pair<int, int>, std::vector<glm::mat4>> TerrainGenerator::createTranslationMatricesForChunk(int chunkX, int chunkY) {
+    std::map<std::pair<int, int>, std::vector<glm::mat4>> matrices;
 
     // offset instance variable is 1 right now so doesn't actually do anything but I think if we want to make mountains/more complex terrain
     // it would be used in this method
-
 
     // use FastNoiseLite library (TODO: replace with our own perlin noise)
     FastNoiseLite noise;
     noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
 
-    noise.SetFrequency(0.10f); // can change this to get more mountainous terrain
+    noise.SetFrequency(0.1f); // can change this to get more mountainous terrain
 
     // want to center the chunk around the players current location
     float centerXOffset = (chunkSize * offset) / 2.0f;
@@ -49,7 +47,7 @@ std::vector<glm::mat4> TerrainGenerator::createTranslationMatricesForChunk(int c
                                                                                 x * offset - centerXOffset + worldXOffset,
                                                                                 y * offset - centerYOffset + worldYOffset,
                                                                                 -maxChunkHeight + z * offset - centerZOffset));
-                    matrices.push_back(translation);
+                    matrices[{x, y}].push_back(translation);
                 }
             }
         }
@@ -59,8 +57,13 @@ std::vector<glm::mat4> TerrainGenerator::createTranslationMatricesForChunk(int c
 
 // based on the current camera position and render distance loads and unloads chunks
 void TerrainGenerator::checkAndLoadChunks() {
-    int currentChunkX = static_cast<int>(playerPosition.x / (chunkSize * offset));
-    int currentChunkY = static_cast<int>(playerPosition.y / (chunkSize * offset));
+    // Adjust position for the fact that the original chunk is centered on the player.
+    float adjustedPositionX = playerPosition.x + (playerPosition.x / abs(playerPosition.x)) * (float) chunkSize / 2.f;
+    float adjustedPositionY = playerPosition.y + (playerPosition.y / abs(playerPosition.y)) * (float) chunkSize / 2.f;
+
+    // Index of the current chunk that the player is in.
+    int currentChunkX = static_cast<int>(adjustedPositionX / (chunkSize * offset));
+    int currentChunkY = static_cast<int>(adjustedPositionY / (chunkSize * offset));
 
     // Create a list to keep track of chunks to unload
     std::vector<std::pair<int, int>> chunksToUnload;
@@ -100,13 +103,33 @@ void TerrainGenerator::updatePlayerPosition(const glm::vec3& newPosition) {
     checkAndLoadChunks();
 }
 
-// getter method for chunk data.
-const std::map<std::pair<int, int>, std::vector<glm::mat4>>& TerrainGenerator::getChunkMatrices() const {
-    return chunkMatrices;
+// finds the z value of the block underneath the camera position passed in.
+float TerrainGenerator::getGroundHeight(glm::vec3 position) {
+    // Adjust position for the fact that the original chunk is centered on the player.
+    float adjustedPositionX = position.x + (position.x / abs(position.x)) * (float) chunkSize / 2.f;
+    float adjustedPositionY = position.y + (position.y / abs(position.y)) * (float) chunkSize / 2.f;
+
+    // Index of the current chunk that the player is in.
+    int currentChunkX = static_cast<int>(adjustedPositionX / (chunkSize * offset));
+    int currentChunkY = static_cast<int>(adjustedPositionY / (chunkSize * offset));
+
+    // Value of X and Y, anywhere from 0 -> chunkSize, within the chunk.
+    int chunkX = (int) position.x - chunkSize * currentChunkX + chunkSize / 2;
+    int chunkY = (int) position.y - chunkSize * currentChunkY + chunkSize / 2;
+
+    // Offset by -1 if it's in a negative chunk so value starts at 0.
+    chunkX = (currentChunkX < 0) ? chunkX - 1 : chunkX;
+    chunkY = (currentChunkY < 0) ? chunkY - 1 : chunkY;
+
+    // Get the terrain height by using the size of the vector storing the blocks in a given column.
+    int terrainHeight = chunkMatrices[{currentChunkX, currentChunkY}][{chunkX, chunkY}].size();
+
+    // This calculation is taken from the createTranslationMatricesForChunk function above.
+    float finalZ = (float) (-maxChunkHeight + terrainHeight * offset - (maxChunkHeight * offset) / 2.0f + 1.5f);
+    return finalZ;
 }
 
-
-
-
-
-
+// getter method for chunk data.
+const std::map<std::pair<int, int>, std::map<std::pair<int, int>, std::vector<glm::mat4>>>& TerrainGenerator::getChunkMatrices() const {
+    return chunkMatrices;
+}
