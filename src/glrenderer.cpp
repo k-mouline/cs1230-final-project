@@ -76,7 +76,7 @@ void GLRenderer::initializeGL()
   fprintf(stdout, "Successfully initialized GLEW %s\n", glewGetString(GLEW_VERSION));
   
   // Set some default values for the OpenGL context
-  glClearColor(0, 0, 0, 1);
+  glClearColor(0.52, .80, 0.92, 1);
   glEnable(GL_CULL_FACE);
   glEnable(GL_DEPTH_TEST);
   
