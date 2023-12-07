@@ -83,21 +83,33 @@ bool TerrainGenerator::checkAndLoadChunks() {
         }
     }
 
-    // Remove chunks that are outside the render distance
     for (auto& chunk : chunksToUnload) {
+        cachedChunkMatrices[chunk] = chunkMatrices[chunk];
         chunkMatrices.erase(chunk);
     }
 
     // Load new chunks within the render distance
     for (int x = currentChunkX - renderDistance; x <= currentChunkX + renderDistance; ++x) {
         for (int y = currentChunkY - renderDistance; y <= currentChunkY + renderDistance; ++y) {
-            if (chunkMatrices.find({x, y}) == chunkMatrices.end()) {
-                // Chunk not loaded, generate new chunk
-                chunkMatrices[{x, y}] = createTranslationMatricesForChunk(x, y);
+            std::pair<int, int> chunkKey = {x, y};
+            if (chunkMatrices.find(chunkKey) == chunkMatrices.end()) {
+                // Check cache first
+                if (cachedChunkMatrices.find(chunkKey) != cachedChunkMatrices.end()) {
+                    // Load from cache
+                    chunkMatrices[chunkKey] = cachedChunkMatrices[chunkKey];
+                    cachedChunkMatrices.erase(chunkKey);
+                    std::cout << "working" << std::endl;
+
+                } else {
+                    // Generate new chunk
+                    chunkMatrices[chunkKey] = createTranslationMatricesForChunk(x, y);
+                }
             }
         }
     }
-    return (chunksToUnload.size() != 0); // check and load chunks returns TRUE if there are chunks to unload
+
+    return !chunksToUnload.empty();
+
 }
 
 // takes in player position (cameraPosition instance variable) and updates chunks based on that
@@ -108,18 +120,18 @@ std::vector<Cube*> TerrainGenerator::updatePlayerPosition(const glm::vec3& newPo
     // should return true or false
     if(checkAndLoadChunks() || isFirst){
         cubesVector.clear();
-          for (const auto& chunkEntry : chunkMatrices) {
-              const auto& chunkMatrix = chunkEntry.second;
+        for (const auto& chunkEntry : chunkMatrices) {
+            const auto& chunkMatrix = chunkEntry.second;
 
-              for (const auto& blockColumn : chunkMatrix) {
-                  const auto& columnMatrices = blockColumn.second;
+            for (const auto& blockColumn : chunkMatrix) {
+                const auto& columnMatrices = blockColumn.second;
 
-                  for (const glm::mat4& matrix : columnMatrices) {
-                      Cube* newCube = new Cube(matrix);
-                      cubesVector.push_back(newCube);
-                  }
-              }
-          }
+                for (const glm::mat4& matrix : columnMatrices) {
+                    Cube* newCube = new Cube(matrix);
+                    cubesVector.push_back(newCube);
+                }
+            }
+        }
     }
     return cubesVector;
 }

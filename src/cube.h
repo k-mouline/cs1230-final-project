@@ -17,7 +17,7 @@ public:
     void setVAO(GLuint &vao);
     GLuint getVAO();
 
-    glm::mat4 getCTM();
+    glm::mat4 getCTM() const;
     std::vector<float> getVertexData();
     void setVertexData();
     void makeFace(glm::vec3 topLeft,

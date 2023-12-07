@@ -422,7 +422,6 @@ void GLRenderer::mouseReleaseEvent(QMouseEvent *event) {
 }
 
 void GLRenderer::mouseMoveEvent(QMouseEvent *event) {
-  if (m_mouseDown) {
       int posX = event->position().x();
       int posY = event->position().y();
       int deltaX = posX - m_prev_mouse_pos.x;
@@ -460,7 +459,7 @@ void GLRenderer::mouseMoveEvent(QMouseEvent *event) {
       updateCamera();
       update();
 
-  }
+
 }
 
 void GLRenderer::timerEvent(QTimerEvent *event) {

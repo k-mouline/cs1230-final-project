@@ -1,7 +1,16 @@
 #include "cube.h"
+#include <random>
+#include "iostream"
 
 Cube::Cube(glm::mat4 ctm){
     transformationMatrix = ctm;
+    std::random_device rd;  // Obtain a random number from hardware
+    std::mt19937 gen(rd()); // Seed the generator
+
+    std::uniform_int_distribution<> distrib(0, 1); // Define the range
+
+    // Generate a random number between 1 and 10
+    id = distrib(gen);
 }
 
 
@@ -12,10 +21,8 @@ std::vector<float> Cube::initialize(int param1, int param2, float texCoord1Top, 
         texCoord1 = texCoord1Top;
         texCoord2 = texCoord2Top;
 
+
         setVertexData();
-
-
-
         return m_vertexData;
     }
 
@@ -35,7 +42,7 @@ std::vector<float> Cube::initialize(int param1, int param2, float texCoord1Top, 
         return VAO;
     }
 
-    glm::mat4 Cube::getCTM(){
+    glm::mat4 Cube::getCTM() const{
         return transformationMatrix;
     }
 
