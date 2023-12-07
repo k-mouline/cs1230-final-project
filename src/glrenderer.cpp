@@ -79,6 +79,8 @@ void GLRenderer::initializeGL()
   glClearColor(0.52, .80, 0.92, 1);
   glEnable(GL_CULL_FACE);
   glEnable(GL_DEPTH_TEST);
+  glEnable(GL_BLEND); // For fade out
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   
   // Load shaders
   m_texture_shader = ShaderLoader::createShaderProgram(":/resources/shaders/texture.vert", ":/resources/shaders/texture.frag");
