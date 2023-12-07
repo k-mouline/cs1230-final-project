@@ -166,8 +166,6 @@ void GLRenderer::makeFBO(){
 
     // Task 22: Unbind the FBO
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
 }
 
 void GLRenderer::paintGL()
@@ -425,11 +423,30 @@ void GLRenderer::mouseReleaseEvent(QMouseEvent *event) {
 }
 
 void GLRenderer::mouseMoveEvent(QMouseEvent *event) {
+      int centerX = width() / 2;
+      int centerY = height() / 2;
       int posX = event->position().x();
       int posY = event->position().y();
       int deltaX = posX - m_prev_mouse_pos.x;
       int deltaY = posY - m_prev_mouse_pos.y;
       m_prev_mouse_pos = glm::vec2(posX, posY);
+      if (m_mouseSnap) { // change in glrenderer.h if you don't want the mouse to stay in the middle of the screen
+          QCursor::setPos(mapToGlobal(QPoint(centerX, centerY)));
+          if (posX > centerX && deltaX < 0){
+            return;
+          }
+          if (posX < centerX && deltaX > 0){
+            return;
+          }
+          if (posY > centerY && deltaY < 0){
+            return;
+          }
+          if (posY < centerY && deltaY > 0){
+            return;
+          }
+          deltaX *= 3;
+          deltaY *= 3;
+      }
 
       // rotation speed from assignment
       float rotationSpeed = m_rotationSpeed;
@@ -462,7 +479,7 @@ void GLRenderer::mouseMoveEvent(QMouseEvent *event) {
       updateCamera();
       update();
 
-
+      QCursor::setPos(mapToGlobal(QPoint(width() / 2, height() / 2)));
 }
 
 void GLRenderer::timerEvent(QTimerEvent *event) {

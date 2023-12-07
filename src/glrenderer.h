@@ -113,6 +113,7 @@ private:
     float m_angleX;
     float m_angleY;
     float m_zoom;
+    bool m_mouseSnap = true;
 
     enum blockType {
         gravel = 0,

@@ -20,7 +20,9 @@ int main(int argc, char *argv[])
 
   // Create a GUI window
   MainWindow mainWindow;
-  mainWindow.resize(600, 400); // feel free to change this
+  mainWindow.resize(1000, 600); // feel free to change this
+
+
 
   // Optional: full-screen in the (unlikely) event that the window is too large
   float desktopArea = QGuiApplication::primaryScreen()->size().width() *

@@ -101,7 +101,6 @@ bool TerrainGenerator::checkAndLoadChunks() {
                     // Load from cache
                     chunkMatrices1[chunkKey] = cachedChunkMatrices2[chunkKey];
                     cachedChunkMatrices2.erase(chunkKey);
-                    std::cout << "working" << std::endl;
 
                 } else {
                     // Generate new chunk
