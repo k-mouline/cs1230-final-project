@@ -4,6 +4,7 @@
 
 Cube::Cube(glm::mat4 ctm){
     transformationMatrix = ctm;
+    position = glm::vec3(ctm * glm::vec4(0.5f, 0.5f, 0.5f, 1.f));
     std::random_device rd;  // Obtain a random number from hardware
     std::mt19937 gen(rd()); // Seed the generator
 
@@ -170,5 +171,9 @@ std::vector<float> Cube::initialize(int param1, int param2, float texCoord1Top, 
 
     int Cube::getID(){
         return id;
+    }
+
+    glm::vec3 Cube::getPosition(){
+        return position;
     }
 

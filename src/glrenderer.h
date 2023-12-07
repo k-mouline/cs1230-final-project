@@ -64,7 +64,6 @@ private:
     glm::vec3 cameraUp;
     float cameraSpeed;
 
-
     int m_timer;                                        // Stores timer which attempts to run ~60 times per second
     QElapsedTimer m_elapsedTimer;                       // Stores timer which keeps track of actual time between frames
 
@@ -73,6 +72,8 @@ private:
     glm::vec2 m_prev_mouse_pos;
 
     SceneCameraData m_renderData;
+
+
     std::unordered_map<Qt::Key, bool> m_keyMap;         // Stores whether keys are pressed or not
 
     GLuint m_texture_shader;
@@ -99,6 +100,7 @@ private:
 
     std::map<int, glm::vec2> textureMap;
     void initTextureMap();
+    std::map<std::tuple<float, float, float>, bool> blockMap;
 
     std::vector<Cube*> cubesVector = std::vector<Cube*>();
 

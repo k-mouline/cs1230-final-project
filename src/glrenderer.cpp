@@ -55,7 +55,6 @@ void GLRenderer::finish()
 
 void GLRenderer::initializeGL()
 {
-
   m_timer = startTimer(1000/60);
   m_elapsedTimer.start();
 
@@ -67,6 +66,7 @@ void GLRenderer::initializeGL()
   m_fbo_width = m_screen_width;
   m_fbo_height = m_screen_height;
   initTextureMap();
+
 
   // GLEW is a library which provides an implementation for the OpenGL API
   // Here, we are setting it up
@@ -181,7 +181,6 @@ void GLRenderer::paintGL()
 
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     for(const auto& shape : cubesVector){
         glBindVertexArray(m_cube_vao);
         glUseProgram(m_phong_shader);
@@ -207,11 +206,15 @@ void GLRenderer::paintGL()
         glUniform1f(glGetUniformLocation(m_phong_shader, "kd"),m_kd);
         glUniform1f(glGetUniformLocation(m_phong_shader, "ks"),m_ks);
         // deciding which texture based off of layers
-        float z_val = glm::vec3(shape->getCTM() * glm::vec4(0.5f, 0.5f, 0.5f, 1.f))[2];
-        float y_val = glm::vec3(shape->getCTM() * glm::vec4(0.5f, 0.5f, 0.5f, 1.f))[1];
+        glm::vec3 position = shape->getPosition();
+        std::tuple<float, float, float> positionAbove = {position[0], position[1], position[2] + 1};
+        if (blockMap[positionAbove] == true){
+            continue;
+        }
+        blockMap[{position[0], position[1], position[2]}] = true;
+        float z_val = position[2];
         if (z_val < -18){
-            int i = shape->getID();
-            if (i == 0){
+            if (shape->getID() == 0){
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::cobblestone].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::cobblestone].y);
             }
@@ -234,7 +237,7 @@ void GLRenderer::paintGL()
         glDrawArrays(GL_TRIANGLES, 0, 6); // draw top face
 
         if (z_val < -18){
-            if (y_val < -15){
+            if (shape->getID() == 0){
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::cobblestone].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::cobblestone].y);
             }

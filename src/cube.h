@@ -31,6 +31,7 @@ public:
                   glm::vec3 bottomRight);
 
     int getID();
+    glm::vec3 getPosition();
 
 
     float texCoord1;
@@ -40,10 +41,10 @@ public:
 
 private:
         GLuint VAO, VBO;
-
         int m_param1;
         int m_param2;
         glm::mat4 transformationMatrix;
+        glm::vec3 position;
         std::vector<float> m_vertexData;
         int id;
 
