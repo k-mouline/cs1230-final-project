@@ -142,12 +142,12 @@ void GLRenderer::initializeGL()
 
 void GLRenderer::makeFBO(){
     // Task 19: Generate and bind an empty texture, set its min/mag filter interpolation, then unbind
-  glGenTextures(1, &m_fbo_texture);
-  glBindTexture(GL_TEXTURE_2D, m_fbo_texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_fbo_width, m_fbo_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glBindTexture(GL_TEXTURE_2D, 0);
+    glGenTextures(1, &m_fbo_texture);
+    glBindTexture(GL_TEXTURE_2D, m_fbo_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_fbo_width, m_fbo_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
 
     // Task 20: Generate and bind a renderbuffer of the right size, set its format, then unbind
@@ -166,6 +166,34 @@ void GLRenderer::makeFBO(){
 
     // Task 22: Unbind the FBO
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glGenFramebuffers(1, &m_fbo_depth);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo_depth);
+    glDrawBuffer(GL_NONE);
+
+    // create a renderbuffer object to store depth info
+    glGenRenderbuffers(1, &m_fbo_depth);
+    glBindRenderbuffer(GL_RENDERBUFFER, m_fbo_depth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 3, 3);
+
+    // attach the renderbuffer to depth attachment point
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                 GL_RENDERBUFFER, m_fbo_renderbuffer);
+
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo_depth);
+    glBindRenderbuffer(GL_RENDERBUFFER, m_fbo_depth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24,3, 3);
+
+    // attach the renderbuffer to depth attachment point
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                 GL_RENDERBUFFER, m_fbo_renderbuffer);
+
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+
 
 
 }

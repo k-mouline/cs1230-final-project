@@ -82,6 +82,7 @@ private:
     GLuint m_fbo;
     GLuint m_fbo_texture;
     GLuint m_fbo_renderbuffer;
+    GLuint m_fbo_depth;
 
     GLuint m_phong_shader;
     std::vector<float> m_cube_data;
