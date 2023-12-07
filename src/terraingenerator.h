@@ -4,12 +4,13 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <map>
+#include "cube.h"
 
 class TerrainGenerator
 {
 public:
     TerrainGenerator();
-    std::map<std::pair<int, int>, std::vector<glm::mat4>> createTranslationMatricesForChunk(int chunkX, int chunkY);
+    std::map<std::pair<int, int>, std::vector<Cube*>> createTranslationMatricesForChunk(int chunkX, int chunkY);
     static float getOffset();
     static const int chunkSize = 10;
     static const int maxChunkHeight = 16;
@@ -19,10 +20,10 @@ public:
     int renderDistance = 2; // Number of chunks to render in each direction from the player
     std::vector<Cube*> updatePlayerPosition(const glm::vec3& newPosition, std::vector<Cube*> oldCubes, bool isFirst);
     bool checkAndLoadChunks();
-    const std::map<std::pair<int, int>, std::map<std::pair<int, int>, std::vector<glm::mat4>>>& getChunkMatrices() const;
-    std::map<std::pair<int, int>, std::map<std::pair<int, int>, std::vector<glm::mat4>>> chunkMatrices;
-    std::map<std::pair<int, int>, std::map<std::pair<int, int>, std::vector<glm::mat4>>> cachedChunkMatrices;
+    const std::map<std::pair<int, int>, std::map<std::pair<int, int>, std::vector<Cube*>>>& getChunkMatrices() const;
 
+    std::map<std::pair<int, int>, std::map<std::pair<int, int>, std::vector<Cube*>>> chunkMatrices1;
+    std::map<std::pair<int, int>, std::map<std::pair<int, int>, std::vector<Cube*>>> cachedChunkMatrices2;
 
     std::vector<Cube*> cubesVector;
 

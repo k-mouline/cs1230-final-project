@@ -10,8 +10,10 @@ TerrainGenerator::TerrainGenerator(){
 }
 
 // method takes in the current chunk location (using ints) and using these as offsets
-std::map<std::pair<int, int>, std::vector<glm::mat4>> TerrainGenerator::createTranslationMatricesForChunk(int chunkX, int chunkY) {
+std::map<std::pair<int, int>, std::vector<Cube*>> TerrainGenerator::createTranslationMatricesForChunk(int chunkX, int chunkY) {
     std::map<std::pair<int, int>, std::vector<glm::mat4>> matrices;
+
+    std::map<std::pair<int,int>, std::vector<Cube*>> matricesCubes;
 
     // offset instance variable is 1 right now so doesn't actually do anything but I think if we want to make mountains/more complex terrain
     // it would be used in this method
@@ -49,12 +51,13 @@ std::map<std::pair<int, int>, std::vector<glm::mat4>> TerrainGenerator::createTr
                                                                                 y * offset - centerYOffset + worldYOffset,
                                                                                 -maxChunkHeight + z * offset - centerZOffset));
                     matrices[{x, y}].push_back(translation);
+                    matricesCubes[{x,y}].push_back(new Cube(translation));
                 }
             }
         }
     }
 
-    return matrices;
+    return matricesCubes;
 }
 
 // based on the current camera position and render distance loads and unloads chunks
@@ -71,7 +74,7 @@ bool TerrainGenerator::checkAndLoadChunks() {
     std::vector<std::pair<int, int>> chunksToUnload;
 
     // Iterate through all loaded chunks
-    for (auto& chunk : chunkMatrices) {
+    for (auto& chunk : chunkMatrices1) {
         int x = chunk.first.first;
         int y = chunk.first.second;
 
@@ -84,25 +87,25 @@ bool TerrainGenerator::checkAndLoadChunks() {
     }
 
     for (auto& chunk : chunksToUnload) {
-        cachedChunkMatrices[chunk] = chunkMatrices[chunk];
-        chunkMatrices.erase(chunk);
+        cachedChunkMatrices2[chunk] = chunkMatrices1[chunk];
+        chunkMatrices1.erase(chunk);
     }
 
     // Load new chunks within the render distance
     for (int x = currentChunkX - renderDistance; x <= currentChunkX + renderDistance; ++x) {
         for (int y = currentChunkY - renderDistance; y <= currentChunkY + renderDistance; ++y) {
             std::pair<int, int> chunkKey = {x, y};
-            if (chunkMatrices.find(chunkKey) == chunkMatrices.end()) {
+            if (chunkMatrices1.find(chunkKey) == chunkMatrices1.end()) {
                 // Check cache first
-                if (cachedChunkMatrices.find(chunkKey) != cachedChunkMatrices.end()) {
+                if (cachedChunkMatrices2.find(chunkKey) != cachedChunkMatrices2.end()) {
                     // Load from cache
-                    chunkMatrices[chunkKey] = cachedChunkMatrices[chunkKey];
-                    cachedChunkMatrices.erase(chunkKey);
+                    chunkMatrices1[chunkKey] = cachedChunkMatrices2[chunkKey];
+                    cachedChunkMatrices2.erase(chunkKey);
                     std::cout << "working" << std::endl;
 
                 } else {
                     // Generate new chunk
-                    chunkMatrices[chunkKey] = createTranslationMatricesForChunk(x, y);
+                    chunkMatrices1[chunkKey] = createTranslationMatricesForChunk(x, y);
                 }
             }
         }
@@ -120,15 +123,14 @@ std::vector<Cube*> TerrainGenerator::updatePlayerPosition(const glm::vec3& newPo
     // should return true or false
     if(checkAndLoadChunks() || isFirst){
         cubesVector.clear();
-        for (const auto& chunkEntry : chunkMatrices) {
+        for (const auto& chunkEntry : chunkMatrices1) {
             const auto& chunkMatrix = chunkEntry.second;
 
             for (const auto& blockColumn : chunkMatrix) {
                 const auto& columnMatrices = blockColumn.second;
 
-                for (const glm::mat4& matrix : columnMatrices) {
-                    Cube* newCube = new Cube(matrix);
-                    cubesVector.push_back(newCube);
+                for (Cube* cube : columnMatrices) {
+                    cubesVector.push_back(cube);
                 }
             }
         }
@@ -155,7 +157,7 @@ float TerrainGenerator::getGroundHeight(glm::vec3 position) {
     chunkY = (currentChunkY < 0) ? chunkY - 1 : chunkY;
 
     // Get the terrain height by using the size of the vector storing the blocks in a given column.
-    int terrainHeight = chunkMatrices[{currentChunkX, currentChunkY}][{chunkX, chunkY}].size();
+    int terrainHeight = chunkMatrices1[{currentChunkX, currentChunkY}][{chunkX, chunkY}].size();
 
     // This calculation is taken from the createTranslationMatricesForChunk function above.
     float finalZ = (float) (-maxChunkHeight + terrainHeight * offset - (maxChunkHeight * offset) / 2.0f + 1.5f);
@@ -163,6 +165,6 @@ float TerrainGenerator::getGroundHeight(glm::vec3 position) {
 }
 
 // getter method for chunk data.
-const std::map<std::pair<int, int>, std::map<std::pair<int, int>, std::vector<glm::mat4>>>& TerrainGenerator::getChunkMatrices() const {
-    return chunkMatrices;
+const std::map<std::pair<int, int>, std::map<std::pair<int, int>, std::vector<Cube*>>>& TerrainGenerator::getChunkMatrices() const {
+    return chunkMatrices1;
 }
