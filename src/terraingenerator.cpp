@@ -27,7 +27,9 @@ void generateTree(int baseX, int baseY, int baseZ, std::map<std::pair<int,int>, 
             for (int z = treeHeight - leafRadius; z <= treeHeight; ++z) {
                 if (x * x + y * y + (z - treeHeight + leafRadius) * (z - treeHeight + leafRadius) <= leafRadius * leafRadius) {
                     glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(baseX + x, baseY + y, baseZ + z));
-                    matricesCubes[{baseX + x, baseY + y}].push_back(new Cube(translation));
+                    Cube* newCube = new Cube(translation);
+                    newCube->setID(3);
+                    matricesCubes[{baseX + x, baseY + y}].push_back(newCube);
                 }
             }
         }

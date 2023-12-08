@@ -208,9 +208,10 @@ void GLRenderer::paintGL()
         // deciding which texture based off of layers
         glm::vec3 position = shape->getPosition();
         std::tuple<float, float, float> positionAbove = {position[0], position[1], position[2] + 1};
-//        if (blockMap[positionAbove] == true){
-//            continue;
-//        }
+        int currID = shape->getID();
+        if (blockMap[positionAbove] == true && currID != 2 && currID != 3){
+            continue;
+        }
         blockMap[{position[0], position[1], position[2]}] = true;
         float z_val = position[2];
         if (z_val < -18){
@@ -233,6 +234,9 @@ void GLRenderer::paintGL()
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::logSide].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::logSide].y);
 
+            }else if(shape->getID() ==3){
+                glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::greyLeaves].x);
+                glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::greyLeaves].y);
             }else{
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::grassTop].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::grassTop].y);
@@ -262,6 +266,9 @@ void GLRenderer::paintGL()
             if(shape->getID() == 2){
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::logSide].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::logSide].y);
+            }else if(shape->getID() ==3){
+                glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::greyLeaves].x);
+                glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::greyLeaves].y);
             }else{
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::dirt].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::dirt].y);
