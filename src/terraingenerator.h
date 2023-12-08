@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <map>
 #include "cube.h"
+#include "FastNoiseLite.h"
 
 class TerrainGenerator
 {
@@ -17,9 +18,10 @@ public:
     static const int chunkDepth  = 16;
     static const int offset = 1;
     float treeProbability = 0.01; // probability of generating a tree above grass (1% -> happens once in every 100 blocks generated)
-    float treeHeight = -14; // generates trees above z_values > -14
+    float treeHeight = -15; // generates trees above z_values > -15
 
 
+    float getFractalNoise(FastNoiseLite noise, float x, float y, int octaves, float persistence);
 
 
     glm::vec3 playerPosition;

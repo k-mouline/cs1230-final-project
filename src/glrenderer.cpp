@@ -11,7 +11,7 @@
 
 GLRenderer::GLRenderer(QWidget *parent)
   : QOpenGLWidget(parent),
-    m_ka(0.5),
+    m_ka(0.20),
     m_kd(0.5),
     m_ks(0.5),
     m_angleX(6),

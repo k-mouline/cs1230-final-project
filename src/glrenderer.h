@@ -130,7 +130,13 @@ private:
         greyLeaves = 53,
         leaves = 54,
         leavesTwo = 55,
-
-
     };
+    struct light{
+        int type;
+        glm::vec3 pos;
+        glm::vec3 directions;
+        glm::vec3 attenuations;
+    };
+    std::vector<light> lightsList;
+
 };

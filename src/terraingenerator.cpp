@@ -9,6 +9,25 @@
 TerrainGenerator::TerrainGenerator(){
 }
 
+// Add this method to TerrainGenerator class
+float TerrainGenerator::getFractalNoise(FastNoiseLite noise, float x, float y, int octaves, float persistence) {
+    float total = 0.0f;
+    float frequency = 1.0f;
+    float amplitude = 1.0f;
+    float maxValue = 0.0f;  // Used for normalizing result
+
+    for(int i = 0; i < octaves; i++) {
+        total += noise.GetNoise(x * frequency, y * frequency) * amplitude;
+
+        maxValue += amplitude;
+        amplitude *= persistence;
+        frequency *= 2;
+    }
+
+    return total / maxValue;
+}
+
+
 void generateTree(int baseX, int baseY, int baseZ, std::map<std::pair<int,int>, std::vector<Cube*>>& matricesCubes) {
     int treeHeight = rand() % 5 + 4; // Random tree height between 4 and 8
     int leafRadius = 2; // Radius of the leaves around the top
@@ -61,13 +80,22 @@ std::map<std::pair<int, int>, std::vector<Cube*>> TerrainGenerator::createTransl
     std::default_random_engine generator;
     std::uniform_real_distribution<float> distribution(0.0, 1.0);
 
+    const int octaves = 8;
+    const float persistence = 0.5f;
+
     // iterate through the chunks
     for (int x = 0; x < chunkSize; x++) {
         for (int y = 0; y < chunkSize; y++) {
 
-            // use noise to get the height of terrain
+//            // use noise to get the height of terrain
+//            float heightValue = getFractalNoise(noise, (float)x + chunkX * chunkSize, (float)y + chunkY * chunkSize, octaves, persistence);
+//            int terrainHeight = static_cast<int>((heightValue + 1) * 0.5 * maxChunkHeight);
+
+
             float heightValue = noise.GetNoise((float)x + chunkX * chunkSize, (float)y + chunkY * chunkSize);
             int terrainHeight = static_cast<int>((heightValue + 1) * 0.5 * maxChunkHeight);
+
+
 
             // iterate through the depth of the terrain and create blocks up until the terrain height.
             for (int z = 0; z < chunkDepth; z++) {
@@ -96,7 +124,6 @@ std::map<std::pair<int, int>, std::vector<Cube*>> TerrainGenerator::createTransl
                     matricesCubes[{x,y}].push_back(new Cube(translation));
                 }
             }
-
 
         }
     }
