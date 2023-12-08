@@ -9,14 +9,39 @@
 TerrainGenerator::TerrainGenerator(){
 }
 
+void generateTree(int baseX, int baseY, int baseZ, std::map<std::pair<int,int>, std::vector<Cube*>>& matricesCubes) {
+    int treeHeight = rand() % 5 + 4; // Random tree height between 4 and 8
+    int leafRadius = 2; // Radius of the leaves around the top
+
+    // make trunk TODO: incorporate textures
+    for (int z = baseZ; z < baseZ + treeHeight; ++z) {
+        glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(baseX, baseY, z));
+        matricesCubes[{baseX, baseY}].push_back(new Cube(translation));
+    }
+
+    // generate leaves
+    for (int x = -leafRadius; x <= leafRadius; ++x) {
+        for (int y = -leafRadius; y <= leafRadius; ++y) {
+            for (int z = treeHeight - leafRadius; z <= treeHeight; ++z) {
+                if (x * x + y * y + (z - treeHeight + leafRadius) * (z - treeHeight + leafRadius) <= leafRadius * leafRadius) {
+                    glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(baseX + x, baseY + y, baseZ + z));
+                    matricesCubes[{baseX + x, baseY + y}].push_back(new Cube(translation));
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+
 // method takes in the current chunk location (using ints) and using these as offsets
 std::map<std::pair<int, int>, std::vector<Cube*>> TerrainGenerator::createTranslationMatricesForChunk(int chunkX, int chunkY) {
     std::map<std::pair<int, int>, std::vector<glm::mat4>> matrices;
 
     std::map<std::pair<int,int>, std::vector<Cube*>> matricesCubes;
-
-    // offset instance variable is 1 right now so doesn't actually do anything but I think if we want to make mountains/more complex terrain
-    // it would be used in this method
 
     // use FastNoiseLite library (TODO: replace with our own perlin noise)
     FastNoiseLite noise;
@@ -33,6 +58,9 @@ std::map<std::pair<int, int>, std::vector<Cube*>> TerrainGenerator::createTransl
     float worldXOffset = chunkX * chunkSize * offset;
     float worldYOffset = chunkY * chunkSize * offset;
 
+    std::default_random_engine generator;
+    std::uniform_real_distribution<float> distribution(0.0, 1.0);
+
     // iterate through the chunks
     for (int x = 0; x < chunkSize; x++) {
         for (int y = 0; y < chunkSize; y++) {
@@ -43,17 +71,35 @@ std::map<std::pair<int, int>, std::vector<Cube*>> TerrainGenerator::createTransl
 
             // iterate through the depth of the terrain and create blocks up until the terrain height.
             for (int z = 0; z < chunkDepth; z++) {
-                if (z <= terrainHeight) {
+                glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(
+                                                                            x * offset - centerXOffset + worldXOffset,
+                                                                            y * offset - centerYOffset + worldYOffset,
+                                                                            -maxChunkHeight + z * offset - centerZOffset));
+
+                if (z < terrainHeight) {
                     // use the calculated offsets from earlier to form the translation matrix of the given cube.
                     // z is offset by negative maxChunkHeight so that the blocks form beneath us.
-                    glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(
-                                                                                x * offset - centerXOffset + worldXOffset,
-                                                                                y * offset - centerYOffset + worldYOffset,
-                                                                                -maxChunkHeight + z * offset - centerZOffset));
                     matrices[{x, y}].push_back(translation);
+                    matricesCubes[{x,y}].push_back(new Cube(translation));
+
+
+                }
+                if(z == terrainHeight){
+                    // generate random probability of creating a tree and calculate the x,y, and z values for where the tree exists
+                    float chance = distribution(generator);
+                    float currHeight = -maxChunkHeight + z * offset - centerZOffset;
+                    float currX =  x * offset - centerXOffset + worldXOffset;
+                    float currY = y * offset - centerYOffset + worldYOffset;
+
+                    // if height and probability match characteristics generate tree
+                    if(chance < treeProbability && currHeight > treeHeight){
+                        generateTree(currX, currY, currHeight, matricesCubes); // Generate the tree
+                    }
                     matricesCubes[{x,y}].push_back(new Cube(translation));
                 }
             }
+
+
         }
     }
 

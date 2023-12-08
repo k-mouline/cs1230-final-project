@@ -16,6 +16,12 @@ public:
     static const int maxChunkHeight = 16;
     static const int chunkDepth  = 16;
     static const int offset = 1;
+    float treeProbability = 0.01; // probability of generating a tree above grass (1% -> happens once in every 100 blocks generated)
+    float treeHeight = -14; // generates trees above z_values > -14
+
+
+
+
     glm::vec3 playerPosition;
     int renderDistance = 2; // Number of chunks to render in each direction from the player
     std::vector<Cube*> updatePlayerPosition(const glm::vec3& newPosition, std::vector<Cube*> oldCubes, bool isFirst);
