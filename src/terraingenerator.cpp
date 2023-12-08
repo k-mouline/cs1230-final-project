@@ -16,7 +16,9 @@ void generateTree(int baseX, int baseY, int baseZ, std::map<std::pair<int,int>, 
     // make trunk TODO: incorporate textures
     for (int z = baseZ; z < baseZ + treeHeight; ++z) {
         glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(baseX, baseY, z));
-        matricesCubes[{baseX, baseY}].push_back(new Cube(translation));
+        Cube* newCube = new Cube(translation);
+        newCube->setID(2);
+        matricesCubes[{baseX, baseY}].push_back(newCube);
     }
 
     // generate leaves
@@ -31,10 +33,6 @@ void generateTree(int baseX, int baseY, int baseZ, std::map<std::pair<int,int>, 
         }
     }
 }
-
-
-
-
 
 
 // method takes in the current chunk location (using ints) and using these as offsets
@@ -81,8 +79,6 @@ std::map<std::pair<int, int>, std::vector<Cube*>> TerrainGenerator::createTransl
                     // z is offset by negative maxChunkHeight so that the blocks form beneath us.
                     matrices[{x, y}].push_back(translation);
                     matricesCubes[{x,y}].push_back(new Cube(translation));
-
-
                 }
                 if(z == terrainHeight){
                     // generate random probability of creating a tree and calculate the x,y, and z values for where the tree exists

@@ -208,9 +208,9 @@ void GLRenderer::paintGL()
         // deciding which texture based off of layers
         glm::vec3 position = shape->getPosition();
         std::tuple<float, float, float> positionAbove = {position[0], position[1], position[2] + 1};
-        if (blockMap[positionAbove] == true){
-            continue;
-        }
+//        if (blockMap[positionAbove] == true){
+//            continue;
+//        }
         blockMap[{position[0], position[1], position[2]}] = true;
         float z_val = position[2];
         if (z_val < -18){
@@ -218,18 +218,26 @@ void GLRenderer::paintGL()
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::cobblestone].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::cobblestone].y);
             }
-            else {
+            else if(shape->getID() == 1) {
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::stone].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::stone].y);
             }
+
         }
         else if (z_val >= -18 && z_val < -15){
             glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::sand].x);
             glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::sand].y);
         }
         else {
-            glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::grassTop].x);
-            glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::grassTop].y);
+            if(shape->getID() == 2){
+                glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::logSide].x);
+                glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::logSide].y);
+
+            }else{
+                glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::grassTop].x);
+                glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::grassTop].y);
+
+            }
         }
 
         // Draw
@@ -251,8 +259,14 @@ void GLRenderer::paintGL()
             glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::sand].y);
         }
         else {
-            glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::dirt].x);
-            glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::dirt].y);
+            if(shape->getID() == 2){
+                glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::logSide].x);
+                glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::logSide].y);
+            }else{
+                glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::dirt].x);
+                glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::dirt].y);
+            }
+
         }
 
         glDrawArrays(GL_TRIANGLES, 6, (m_cube_data.size() / 8) - 6); // draw remaining faces

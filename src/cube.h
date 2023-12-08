@@ -20,6 +20,7 @@ public:
     glm::mat4 getCTM() const;
     std::vector<float> getVertexData();
     void setVertexData();
+    void setID(int idNumber);
     void makeFace(glm::vec3 topLeft,
                   glm::vec3 topRight,
                   glm::vec3 bottomLeft,

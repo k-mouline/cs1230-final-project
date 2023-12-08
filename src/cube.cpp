@@ -169,6 +169,11 @@ std::vector<float> Cube::initialize(int param1, int param2, float texCoord1Top, 
 
     }
 
+    void Cube::setID(int idNumber){
+        id = idNumber;
+    }
+
+
     int Cube::getID(){
         return id;
     }
