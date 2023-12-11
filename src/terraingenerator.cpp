@@ -66,7 +66,7 @@ std::map<std::pair<int, int>, std::vector<Cube*>> TerrainGenerator::createTransl
     FastNoiseLite noise;
     noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
 
-    noise.SetFrequency(0.03f); // can change this to get more mountainous terrain
+    noise.SetFrequency(0.02f); // can change this to get more mountainous terrain
 
     // want to center the chunk around the players current location
     float centerXOffset = (chunkSize * offset) / 2.0f;
@@ -120,7 +120,6 @@ std::map<std::pair<int, int>, std::vector<Cube*>> TerrainGenerator::createTransl
                     }
 
                 }
-
                 if(z == terrainHeight){
                     // generate random probability of creating a tree and calculate the x,y, and z values for where the tree exists
                     float chance = distribution(generator);

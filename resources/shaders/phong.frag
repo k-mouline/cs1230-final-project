@@ -23,22 +23,59 @@ uniform sampler2D myTexture;
 
 uniform float xOffset;
 uniform float yOffset;
+uniform int lightLength;
+
+
+uniform int lightTypes[100]; // specifies what type of light it is
+uniform vec4 lightDirections[100]; // specifies direction of light
+uniform vec3 lightAttenuations[100]; // stores attenuation functions
+uniform vec3 lightPositions[100]; // specifies light positions
+
+
 
 void main() {
     float blend = 1.0f;
     vec4 texCol = texture(myTexture, vec2(fragUV.x + xOffset, fragUV.y + yOffset));
     vec3 textureColor = vec3(texCol);
-    vec3 toCamera = normalize(vec3(camera_pos) - vec3(world_pos));
-    vec3 toLight = vec3(normalize(-light.direction));
-    float diffuse  = clamp(dot(normalize(vec3(world_normal)), toLight), 0, 1);
 
-    vec3 reflectedLight = reflect(-toLight, normalize(vec3(world_normal)));
+    vec3 lightDir;
+    float distanceToLight;
+    fragColor = vec4(0.0f);
 
-    float specular = pow(clamp(dot(toCamera, reflectedLight),0,100), 30);
+    for(int i = 0; i<lightLength; i++){
+        vec3 currAttenuation = lightAttenuations[i];
+        float attenuation = 1.0f;
+        if(lightTypes[i] == 0){
+            lightDir = normalize(vec3(lightPositions[i]) - world_pos);
+            distanceToLight = distance(world_pos, vec3(lightPositions[i]));
+            if(currAttenuation.x == (0.0) && currAttenuation.y == 0.0 && currAttenuation.z == 0.0){
+                attenuation = 1.0;
+            }else{
+                attenuation = 1.0 / (currAttenuation.x + currAttenuation.y * distanceToLight + currAttenuation.z* distanceToLight * distanceToLight);
+            }
 
-    float distance = length(vec3(camera_pos) - vec3(world_pos));
-    float opacity = (distance > 25.f) ? 1.f - clamp((distance - 25.f) / 10.f, 0.f, 1.f): texCol[3];
+        }
+        else if(lightTypes[i] == 1){
+            lightDir = vec3(-lightDirections[i]);
+            attenuation = 1.0f;
+        }
 
-    fragColor = vec4(vec3((kd*(1.0f-blend)+textureColor*blend)*light.color*diffuse +
-                          ka*light.color*textureColor + ks * specular*light.color), opacity);
+        vec3 toCamera = normalize(vec3(camera_pos) - vec3(world_pos));
+        vec3 toLight = vec3(normalize(-lightDir));
+        float diffuse  = clamp(dot(normalize(vec3(world_normal)), toLight), 0, 1);
+
+        vec3 reflectedLight = reflect(-toLight, normalize(vec3(world_normal)));
+
+        float specular = pow(clamp(dot(toCamera, reflectedLight),0,100), 30);
+
+        float distance = length(vec3(camera_pos) - vec3(world_pos));
+        float opacity = (distance > 25.f) ? 1.f - clamp((distance - 25.f) / 10.f, 0.f, 1.f): texCol[3];
+
+        fragColor += vec4(vec3((kd*(1.0f-blend)+textureColor*blend)*diffuse*attenuation +
+                              ka*textureColor + ks * specular), opacity)*attenuation;
+
+
+
+    }
+
 }

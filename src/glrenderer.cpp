@@ -91,6 +91,12 @@ void GLRenderer::initializeGL()
   m_cube_data = newCube->initialize(1, 1, 0.0f/16.0f,0.0f/16.0f);
   initializeExampleGeometry();
 
+  lightTypes.push_back(1);
+  lightPositions.push_back(glm::vec3(10.0, 0.0, 0.0));
+  lightDirections.push_back(glm::vec4(0.0, 0.0, -1.0,1.0f));
+  attenuationFunctions.push_back(glm::vec3(0.0, 0.0, 0.0f));
+
+
   // Task 9: Set the active texture slot to texture slot 0
   glActiveTexture(GL_TEXTURE0);
 
@@ -197,9 +203,32 @@ void GLRenderer::paintGL()
         glUniformMatrix4fv(projLoc,  1, GL_FALSE, &m_proj[0][0]);
 
         // Set uniforms for Phong fragment shader
-        glUniform4f(glGetUniformLocation(m_phong_shader, "light.position"), 10, 0, 0, 1);
-        glUniform3f(glGetUniformLocation(m_phong_shader, "light.color"), 1, 1,1);
-        glUniform4f(glGetUniformLocation(m_phong_shader, "light.direction"), 0, 0, -1.0,1.0f);
+//        glUniform4f(glGetUniformLocation(m_phong_shader, "light.position"), 10, 0, 0, 1);
+//        glUniform3f(glGetUniformLocation(m_phong_shader, "light.color"), 1, 1,1);
+//        glUniform4f(glGetUniformLocation(m_phong_shader, "light.direction"), 0, 0, -1.0,1.0f);
+
+        glUniform1i(glGetUniformLocation(m_phong_shader, "lightLength"),lightTypes.size());
+
+        for (size_t i = 0; i < lightTypes.size(); ++i) {
+            GLint loc = glGetUniformLocation(m_phong_shader, ("lightTypes[" + std::to_string(i) + "]").c_str());
+            glUniform1i(loc, lightTypes[i]);
+
+            GLint loc2 = glGetUniformLocation(m_phong_shader, ("lightDirections[" + std::to_string(i) + "]").c_str());
+            glUniform4f(loc2, lightDirections[i].x, lightDirections[i].y, lightDirections[i].z, lightDirections[i].w);
+
+            GLint loc3 = glGetUniformLocation(m_phong_shader, ("lightAttenuations[" + std::to_string(i) + "]").c_str());
+            glUniform3f(loc3, attenuationFunctions[i].x, attenuationFunctions[i].y, attenuationFunctions[i].z);
+
+            GLint loc4 = glGetUniformLocation(m_phong_shader, ("lightPositions[" + std::to_string(i) + "]").c_str());
+            glUniform3f(loc4, lightPositions[i].x, lightPositions[i].y, lightPositions[i].z);
+        }
+
+
+
+
+
+
+
 
         glUniform1f(glGetUniformLocation(m_phong_shader, "ka"),m_ka);
         glUniform1f(glGetUniformLocation(m_phong_shader, "kd"),m_kd);
@@ -225,7 +254,6 @@ void GLRenderer::paintGL()
 
         }
         else if (z_val >= -18 && z_val < -15){
-
             if (shape->getID() == 5){
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::water].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::water].y);
@@ -446,6 +474,7 @@ void GLRenderer::keyPressEvent(QKeyEvent *event) {
 
 void GLRenderer::keyReleaseEvent(QKeyEvent *event) {
   m_keyMap[Qt::Key(event->key())] = false;
+
 }
 
 void GLRenderer::mousePressEvent(QMouseEvent *event) {
@@ -575,6 +604,15 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
           inTheAir = true;
           velocity = reboundVelocity;
       }
+
+  }
+  if (m_keyMap[Qt::Key_T]) {
+
+      lightTypes.push_back(0);
+      lightPositions.push_back(cameraPos);
+      lightDirections.push_back(glm::vec4(1.0));
+      attenuationFunctions.push_back(glm::vec3(0.8, 0.2, 0.0));
+
   }
 
   // Jump movement stuff
