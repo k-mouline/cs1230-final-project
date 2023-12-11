@@ -28,7 +28,7 @@ float TerrainGenerator::getFractalNoise(FastNoiseLite noise, float x, float y, i
 }
 
 
-void generateTree(int baseX, int baseY, int baseZ, std::map<std::pair<int,int>, std::vector<Cube*>>& matricesCubes) {
+void generateTree(int baseX, int baseY, int baseZ, std::map<std::pair<int,int>, std::vector<Cube*>>& matricesCubes, int originalX, int originalY) {
     int treeHeight = rand() % 5 + 4; // Random tree height between 4 and 8
     int leafRadius = 2; // Radius of the leaves around the top
 
@@ -37,7 +37,7 @@ void generateTree(int baseX, int baseY, int baseZ, std::map<std::pair<int,int>, 
         glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(baseX, baseY, z));
         Cube* newCube = new Cube(translation);
         newCube->setID(2);
-        matricesCubes[{baseX, baseY}].push_back(newCube);
+        matricesCubes[{originalX, originalY}].push_back(newCube);
     }
 
     // generate leaves
@@ -48,7 +48,7 @@ void generateTree(int baseX, int baseY, int baseZ, std::map<std::pair<int,int>, 
                     glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(baseX + x, baseY + y, baseZ + z));
                     Cube* newCube = new Cube(translation);
                     newCube->setID(3);
-                    matricesCubes[{baseX + x, baseY + y}].push_back(newCube);
+                    matricesCubes[{originalX + x, originalY + y}].push_back(newCube);
                 }
             }
         }
@@ -58,7 +58,7 @@ void generateTree(int baseX, int baseY, int baseZ, std::map<std::pair<int,int>, 
 
 // method takes in the current chunk location (using ints) and using these as offsets
 std::map<std::pair<int, int>, std::vector<Cube*>> TerrainGenerator::createTranslationMatricesForChunk(int chunkX, int chunkY) {
-    std::map<std::pair<int, int>, std::vector<glm::mat4>> matrices;
+    //std::map<std::pair<int, int>, std::vector<glm::mat4>> matrices;
 
     std::map<std::pair<int,int>, std::vector<Cube*>> matricesCubes;
 
@@ -83,7 +83,7 @@ std::map<std::pair<int, int>, std::vector<Cube*>> TerrainGenerator::createTransl
     const int octaves = 8;
     const float persistence = 0.5f;
 
-    // iterate through the chunks
+    // iterate through the block in the chunk
     for (int x = 0; x < chunkSize; x++) {
         for (int y = 0; y < chunkSize; y++) {
 
@@ -107,9 +107,20 @@ std::map<std::pair<int, int>, std::vector<Cube*>> TerrainGenerator::createTransl
                 if (z < terrainHeight) {
                     // use the calculated offsets from earlier to form the translation matrix of the given cube.
                     // z is offset by negative maxChunkHeight so that the blocks form beneath us.
-                    matrices[{x, y}].push_back(translation);
+                    // matrices[{x, y}].push_back(translation);
                     matricesCubes[{x,y}].push_back(new Cube(translation));
                 }
+
+                // Add a layer of water.
+                if (z == chunkDepth - 10) {
+                    if (z > terrainHeight) {
+                        Cube *cube = new Cube(translation);
+                        cube->setID(5);
+                        matricesCubes[{x,y}].push_back(cube);
+                    }
+
+                }
+
                 if(z == terrainHeight){
                     // generate random probability of creating a tree and calculate the x,y, and z values for where the tree exists
                     float chance = distribution(generator);
@@ -119,7 +130,7 @@ std::map<std::pair<int, int>, std::vector<Cube*>> TerrainGenerator::createTransl
 
                     // if height and probability match characteristics generate tree
                     if(chance < treeProbability && currHeight > treeHeight){
-                        generateTree(currX, currY, currHeight, matricesCubes); // Generate the tree
+                        generateTree(currX, currY, currHeight, matricesCubes,x,y); // Generate the tree
                     }
                     matricesCubes[{x,y}].push_back(new Cube(translation));
                 }

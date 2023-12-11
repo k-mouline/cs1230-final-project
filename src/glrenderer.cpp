@@ -77,7 +77,7 @@ void GLRenderer::initializeGL()
   
   // Set some default values for the OpenGL context
   glClearColor(0.52, .80, 0.92, 1);
-  glEnable(GL_CULL_FACE);
+  glDisable(GL_CULL_FACE);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND); // For fade out
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -172,7 +172,6 @@ void GLRenderer::makeFBO(){
 
 void GLRenderer::paintGL()
 {
-
     glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
 
@@ -226,23 +225,34 @@ void GLRenderer::paintGL()
 
         }
         else if (z_val >= -18 && z_val < -15){
-            glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::sand].x);
-            glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::sand].y);
+
+            if (shape->getID() == 5){
+                glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::water].x);
+                glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::water].y);
+            }
+            else {
+                glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::sand].x);
+                glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::sand].y);
+            }
         }
         else {
             if(shape->getID() == 2){
+
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::logSide].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::logSide].y);
 
             }else if(shape->getID() ==3){
-                glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::greyLeaves].x);
-                glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::greyLeaves].y);
-            }else{
+                glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::leaves].x);
+                glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::leaves].y);
+            }
+            else{
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::grassTop].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::grassTop].y);
 
             }
         }
+
+
 
         // Draw
         glBindVertexArray(m_cube_vao);
@@ -259,16 +269,22 @@ void GLRenderer::paintGL()
             }
         }
         else if (z_val >= -18 && z_val < -15){
-            glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::sand].x);
-            glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::sand].y);
+            if (shape->getID() == 5){
+                glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::water].x);
+                glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::water].y);
+            }
+            else {
+                glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::sand].x);
+                glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::sand].y);
+            }
         }
         else {
             if(shape->getID() == 2){
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::logSide].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::logSide].y);
             }else if(shape->getID() ==3){
-                glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::greyLeaves].x);
-                glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::greyLeaves].y);
+                glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::leaves].x);
+                glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::leaves].y);
             }else{
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::dirt].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::dirt].y);
@@ -476,6 +492,7 @@ void GLRenderer::mouseMoveEvent(QMouseEvent *event) {
 
       // Calculate the new front vector
       glm::mat4 rotator;
+      if (m_mouseDown) {
 
       // Rotate around the vertical (world Y) axis
       if (deltaX != 0) {
@@ -492,6 +509,7 @@ void GLRenderer::mouseMoveEvent(QMouseEvent *event) {
           rotator = glm::rotate(glm::mat4(1.0f), glm::radians(angleY), right);
           cameraFront = glm::vec3(rotator * glm::vec4(cameraFront, 0.0));
           cameraUp = glm::vec3(rotator * glm::vec4(cameraUp, 0.0));
+      }
       }
 
       // normalize vectors

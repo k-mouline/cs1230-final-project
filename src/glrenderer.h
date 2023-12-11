@@ -127,9 +127,8 @@ private:
         logSide = 20,
         logCap = 21,
         grassTop = 39,
-        greyLeaves = 53,
-        leaves = 54,
-        leavesTwo = 55,
+        leaves = 40,
+        water = 178
     };
     struct light{
         int type;
