@@ -11,7 +11,7 @@ MainWindow::MainWindow()
   glRenderer = new GLRenderer{};
 
   QHBoxLayout *container = new QHBoxLayout{};
-  setCursor(Qt::BlankCursor);
+//  setCursor(Qt::BlankCursor);
   container->addWidget(glRenderer);
 
   this->setLayout(container);

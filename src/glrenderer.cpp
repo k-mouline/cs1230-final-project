@@ -11,7 +11,7 @@
 
 GLRenderer::GLRenderer(QWidget *parent)
   : QOpenGLWidget(parent),
-    m_ka(0.35),
+    m_ka(0.25),
     m_kd(0.05),
     m_ks(0.05),
     m_angleX(6),
@@ -505,23 +505,23 @@ void GLRenderer::mouseMoveEvent(QMouseEvent *event) {
       int deltaX = posX - m_prev_mouse_pos.x;
       int deltaY = posY - m_prev_mouse_pos.y;
       m_prev_mouse_pos = glm::vec2(posX, posY);
-      if (m_mouseSnap) { // change in glrenderer.h if you don't want the mouse to stay in the middle of the screen
-          QCursor::setPos(mapToGlobal(QPoint(centerX, centerY)));
-          if (posX > centerX && deltaX < 0){
-            return;
-          }
-          if (posX < centerX && deltaX > 0){
-            return;
-          }
-          if (posY > centerY && deltaY < 0){
-            return;
-          }
-          if (posY < centerY && deltaY > 0){
-            return;
-          }
-          deltaX *= 3;
-          deltaY *= 3;
-      }
+//      if (m_mouseSnap) { // change in glrenderer.h if you don't want the mouse to stay in the middle of the screen
+//          QCursor::setPos(mapToGlobal(QPoint(centerX, centerY)));
+//          if (posX > centerX && deltaX < 0){
+//            return;
+//          }
+//          if (posX < centerX && deltaX > 0){
+//            return;
+//          }
+//          if (posY > centerY && deltaY < 0){
+//            return;
+//          }
+//          if (posY < centerY && deltaY > 0){
+//            return;
+//          }
+//          deltaX *= 3;
+//          deltaY *= 3;
+//      }
 
       // rotation speed from assignment
       float rotationSpeed = m_rotationSpeed;
@@ -556,7 +556,7 @@ void GLRenderer::mouseMoveEvent(QMouseEvent *event) {
       updateCamera();
       update();
 
-      QCursor::setPos(mapToGlobal(QPoint(width() / 2, height() / 2)));
+//      QCursor::setPos(mapToGlobal(QPoint(width() / 2, height() / 2)));
 }
 
 void GLRenderer::timerEvent(QTimerEvent *event) {
@@ -567,6 +567,38 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
   // speed of 5, multiply by deltatime to account for specs from handout
   float speed = movementSpeed;
   float distance = speed * deltaTime;
+
+  glm::mat4 rotator = glm::mat4(1.0f);
+  if (m_keyMap[Qt::Key_Left]){
+      float angleX = 5;
+      rotator = glm::rotate(glm::mat4(1.0f), glm::radians(angleX), glm::vec3(0, 0, 1));
+  }
+
+  if (m_keyMap[Qt::Key_Right]){
+      float angleX = -5;
+      rotator = glm::rotate(glm::mat4(1.0f), glm::radians(angleX), glm::vec3(0, 0, 1));
+  }
+
+  if (m_keyMap[Qt::Key_Up]){
+      glm::vec3 right = glm::normalize(glm::cross(cameraFront, cameraUp));
+      float angleY = 3.5;
+      rotator = glm::rotate(glm::mat4(1.0f), glm::radians(angleY), right);
+  }
+
+  if (m_keyMap[Qt::Key_Down]){
+      glm::vec3 right = glm::normalize(glm::cross(cameraFront, cameraUp));
+      float angleY = -3.5;
+      rotator = glm::rotate(glm::mat4(1.0f), glm::radians(angleY), right);
+  }
+
+  if (rotator != glm::mat4(1.0f)){
+      cameraFront = glm::vec3(rotator * glm::vec4(cameraFront, 0.0));
+      cameraUp = glm::vec3(rotator * glm::vec4(cameraUp, 0.0));
+      cameraFront = glm::normalize(cameraFront);
+      cameraUp = glm::normalize(cameraUp);
+      updateCamera();
+      update();
+  }
 
 
   // if s is pressed move backwards in x-y look direction
@@ -657,8 +689,10 @@ void GLRenderer::initTextureMap(){
 
 void GLRenderer::populateBlockMap(){
   for(const auto& shape : cubesVector){
-      glm::vec3 position = shape->getPosition();
-      blockMap[{position[0], position[1], position[2]}] = true;
+      if (shape->getID() != 5){
+          glm::vec3 position = shape->getPosition();
+          blockMap[{position[0], position[1], position[2]}] = true;
+      }
   }
 }
 

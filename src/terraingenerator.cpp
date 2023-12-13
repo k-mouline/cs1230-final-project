@@ -65,7 +65,7 @@ std::map<std::tuple<int, int, int>, Cube*> TerrainGenerator::createTranslationMa
     FastNoiseLite noise;
     noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
 
-    noise.SetFrequency(0.03f); // Can change this to get more mountainous terrain.
+    noise.SetFrequency(0.02f); // Can change this to get more mountainous terrain.
 
     // Want to center the chunk around the players current location.
     float centerXOffset = chunkSize / 2.0f;
@@ -107,7 +107,7 @@ std::map<std::tuple<int, int, int>, Cube*> TerrainGenerator::createTranslationMa
 
                 // Add a layer of water.
                 if (z <= chunkDepth - 14) {
-                    if (z > terrainHeight) {
+                    if (z > terrainHeight-1) {
                         Cube* cube = new Cube(translation);
                         cube->setID(5);
                         matricesCubes[{x,y,z}] = cube;
@@ -177,10 +177,9 @@ bool TerrainGenerator::checkAndLoadChunks() {
         chunkMatrices1.erase(chunk);
     }
 
-    if(counter % 10 == 0){
+    if(counter % 20 == 0){
     int randomInt = getRandomInt();
     if(randomInt != 0 && randomInt != 1 && randomInt != -1){
-
         previousHeightOFfset++;
     }
     else{

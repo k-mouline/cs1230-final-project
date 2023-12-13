@@ -17,8 +17,8 @@ public:
     static const int maxChunkHeight = 25;
     static const int chunkDepth  = 25;
     static const int offset = 1;
-    float treeProbability = 0.01; // probability of generating a tree above grass (1% -> happens once in every 100 blocks generated)
-    float treeHeight = -23; // generates trees above z_values > -15
+    float treeProbability = 0.15; // probability of generating a tree above grass (1% -> happens once in every 100 blocks generated)
+    float treeHeight = -24; // generates trees above z_values > -15
 
     int previousHeightOFfset = 0;
 
