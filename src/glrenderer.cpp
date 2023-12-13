@@ -12,8 +12,8 @@
 GLRenderer::GLRenderer(QWidget *parent)
   : QOpenGLWidget(parent),
     m_ka(0.35),
-    m_kd(0.2),
-    m_ks(0.2),
+    m_kd(0.05),
+    m_ks(0.05),
     m_angleX(6),
     m_angleY(0),
     m_zoom(2)
@@ -613,7 +613,7 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
       lightTypes.push_back(0);
       lightPositions.push_back(glm::vec4(cameraPos,1.0));
       lightDirections.push_back(glm::vec4(1.0));
-      attenuationFunctions.push_back(glm::vec3(0.1, 0.1, 0.0));
+      attenuationFunctions.push_back(glm::vec3(0.4, 0.4, 0.0));
       lightColors.push_back(glm::vec3(0.96,0.60,0.24));
   }
 

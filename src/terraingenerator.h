@@ -20,6 +20,8 @@ public:
     float treeProbability = 0.01; // probability of generating a tree above grass (1% -> happens once in every 100 blocks generated)
     float treeHeight = -15; // generates trees above z_values > -15
 
+    int previousHeightOFfset = 0;
+
     float getFractalNoise(FastNoiseLite noise, float x, float y, int octaves, float persistence);
 
     glm::vec3 playerPosition;
@@ -32,6 +34,10 @@ public:
     std::map<std::pair<int, int>, std::map<std::tuple<int, int, int>, Cube*>> cachedChunkMatrices2;
 
     std::vector<Cube*> cubesVector;
+
+    int getRandomInt();
+    int counter;
+
 
     // Takes in the camera position and gets the height of the terrain at that point.
     int getGroundHeight(glm::vec3 position);

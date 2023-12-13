@@ -65,7 +65,7 @@ std::map<std::tuple<int, int, int>, Cube*> TerrainGenerator::createTranslationMa
     FastNoiseLite noise;
     noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
 
-    noise.SetFrequency(0.045f); // Can change this to get more mountainous terrain.
+    noise.SetFrequency(0.03f); // Can change this to get more mountainous terrain.
 
     // Want to center the chunk around the players current location.
     float centerXOffset = chunkSize / 2.0f;
@@ -78,14 +78,17 @@ std::map<std::tuple<int, int, int>, Cube*> TerrainGenerator::createTranslationMa
 
     std::default_random_engine generator;
     std::uniform_real_distribution<float> distribution(0.0, 1.0);
+    int terrainOffset = getRandomInt();
 
     // Iterate through the block in the chunk.
     for (int x = 0; x < chunkSize; x++) {
         for (int y = 0; y < chunkSize; y++) {
 
+
+
             // Use noise to get the height of terrain.
             float heightValue = noise.GetNoise((float)x + chunkX * chunkSize, (float)y + chunkY * chunkSize);
-            int terrainHeight = static_cast<int>((heightValue + 1) * 0.5 * maxChunkHeight);
+            int terrainHeight = static_cast<int>((heightValue + 1) * 0.5 * maxChunkHeight)+previousHeightOFfset;
 
             // Iterate through the depth of the terrain and create blocks up until the terrain height.
             for (int z = 0; z < chunkDepth; z++) {
@@ -127,6 +130,21 @@ std::map<std::tuple<int, int, int>, Cube*> TerrainGenerator::createTranslationMa
             }
         }
     }
+//    if(counter >= 7 || previousHeightOFfset >= 7){
+//        previousHeightOFfset-=getRandomInt();
+//    }
+//    else{
+//        previousHeightOFfset+=getRandomInt();
+//    }
+//    if(counter >=10){
+//        counter = 0;
+//    }
+//    else{
+//        counter+=1;
+//    }
+    std::cout << previousHeightOFfset <<std::endl;
+    std::cout << counter <<std::endl;
+
     return matricesCubes;
 }
 
@@ -161,7 +179,7 @@ bool TerrainGenerator::checkAndLoadChunks() {
         chunkMatrices1.erase(chunk);
     }
 
-    // Load new chunks within the render distance
+    previousHeightOFfset = getRandomInt();
     for (int x = currentChunkX - renderDistance; x <= currentChunkX + renderDistance; ++x) {
         for (int y = currentChunkY - renderDistance; y <= currentChunkY + renderDistance; ++y) {
             std::pair<int, int> chunkKey = {x, y};
@@ -239,3 +257,27 @@ int TerrainGenerator::getGroundHeight(glm::vec3 position) {
 const std::map<std::pair<int, int>, std::map<std::tuple<int, int, int>, Cube*>>& TerrainGenerator::getChunkMatrices() const {
     return chunkMatrices1;
 }
+
+int TerrainGenerator::getRandomInt() {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    // Set up a discrete distribution where 0 has a 90% probability,
+    // and -1, 1, 2, 3 each have a 2.5% probability
+    std::discrete_distribution<> dis({40, 20, 40, 0, 0});
+
+    // Generate a number based on the distribution
+    int number = dis(gen);
+
+    // Map the generated number to the desired range and return it
+    if (number == 0) {
+        return 0;  // 50% chance
+    } else if (number == 1) {
+        return -1; // 20% chance
+    } else {
+        return number - 1; // 20% chance for 1, 5% each for 2 and 3
+    }
+
+
+}
+
