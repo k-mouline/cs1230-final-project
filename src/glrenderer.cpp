@@ -561,70 +561,46 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
   float speed = movementSpeed;
   float distance = speed * deltaTime;
 
-  float currentHeight = cameraPos.z;
-
   // if s is pressed move backwards in x-y look direction
   if (m_keyMap[Qt::Key_S]) {
       glm::vec3 newPos = cameraPos - distance * glm::normalize(glm::vec3(cameraFront.x, cameraFront.y, 0.f));
-      float newHeight = generator.getGroundHeight(newPos);
-      if (newHeight <= currentHeight) {
-          cameraPos = newPos;
-      }
+      cameraPos = (generator.getGroundHeight(newPos)) ? newPos : cameraPos;
   }
 
   // if w is pressed move forwards in x-y look direction
   if (m_keyMap[Qt::Key_W]) {
       glm::vec3 newPos = cameraPos + distance * glm::normalize(glm::vec3(cameraFront.x, cameraFront.y, 0.f));
-      float newHeight = generator.getGroundHeight(newPos);
-      if (newHeight <= currentHeight) {
-          cameraPos = newPos;
-      }
+      cameraPos = (generator.getGroundHeight(newPos)) ? newPos : cameraPos;
   }
 
   // if A is pressed move to the left of the cross product of up and front vectors
   if (m_keyMap[Qt::Key_A]) {
       glm::vec3 newPos = cameraPos - glm::normalize(glm::cross(cameraFront, cameraUp)) * distance;
-      float newHeight = generator.getGroundHeight(newPos);
-      if (newHeight <= currentHeight) {
-          cameraPos = newPos;
-      }
-
+      cameraPos = (generator.getGroundHeight(newPos)) ? newPos : cameraPos;
   }
+
   // if D is pressed move to the right of the cross product of up and front vectors
   if (m_keyMap[Qt::Key_D]) {
       glm::vec3 newPos = cameraPos + glm::normalize(glm::cross(cameraFront, cameraUp)) * distance;
-      float newHeight = generator.getGroundHeight(newPos);
-      if (newHeight <= currentHeight) {
-          cameraPos = newPos;
-      }
+      cameraPos = (generator.getGroundHeight(newPos)) ? newPos : cameraPos;
   }
+
   // translate camera among world space vector up
   if (m_keyMap[Qt::Key_Space]) {
       if (!inTheAir){
           inTheAir = true;
           velocity = reboundVelocity;
       }
-
-  }
-  if (m_keyMap[Qt::Key_T]) {
-
-      lightTypes.push_back(0);
-      lightPositions.push_back(cameraPos);
-      lightDirections.push_back(glm::vec4(1.0));
-      attenuationFunctions.push_back(glm::vec3(0.8, 0.2, 0.0));
-
   }
 
   // Jump movement stuff
-  float groundPosition = generator.getGroundHeight(cameraPos);
   velocity = fmax(velocity + acceleration*deltaTime, minimumVelocity);
-  float newZPosition = cameraPos.z + velocity*deltaTime;
-  if (newZPosition < groundPosition) {
+  glm::vec3 newPos = glm::vec3(cameraPos.x, cameraPos.y, cameraPos.z + velocity*deltaTime);
+  if (!generator.getGroundHeight(newPos)) {
       velocity = 0;
       inTheAir = false;
-      cameraPos.z = groundPosition;
   }
-  else cameraPos.z = newZPosition;
+  else cameraPos = newPos;
 
   // update player position in terrain generator so it knows what chunks to load
   cubesVector = generator.updatePlayerPosition(cameraPos, cubesVector, false);
