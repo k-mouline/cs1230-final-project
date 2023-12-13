@@ -14,11 +14,11 @@ public:
     std::map<std::tuple<int, int, int>, Cube*> createTranslationMatricesForChunk(int chunkX, int chunkY);
     static float getOffset();
     static const int chunkSize = 8;
-    static const int maxChunkHeight = 16;
-    static const int chunkDepth  = 16;
+    static const int maxChunkHeight = 25;
+    static const int chunkDepth  = 25;
     static const int offset = 1;
     float treeProbability = 0.01; // probability of generating a tree above grass (1% -> happens once in every 100 blocks generated)
-    float treeHeight = -15; // generates trees above z_values > -15
+    float treeHeight = -23; // generates trees above z_values > -15
 
     int previousHeightOFfset = 0;
 

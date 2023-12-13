@@ -248,7 +248,7 @@ void GLRenderer::paintGL()
 
         blockMap[{position[0], position[1], position[2]}] = true;
         float z_val = position[2];
-        if (z_val < -18){
+        if (z_val < -26){
             if (currID == 0){
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::cobblestone].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::cobblestone].y);
@@ -259,7 +259,7 @@ void GLRenderer::paintGL()
             }
 
         }
-        else if (z_val >= -18 && z_val < -15){
+        else if (z_val >= -26 && z_val < -22){
             if (currID == 5){
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::water].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::water].y);
@@ -292,7 +292,7 @@ void GLRenderer::paintGL()
         glBindVertexArray(m_cube_vao);
         glDrawArrays(GL_TRIANGLES, 0, 6); // draw top face
 
-        if (z_val < -18){
+        if (z_val < -26){
             if (shape->getID() == 0){
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::cobblestone].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::cobblestone].y);
@@ -302,7 +302,7 @@ void GLRenderer::paintGL()
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::stone].y);
             }
         }
-        else if (z_val >= -18 && z_val < -15){
+        else if (z_val >= -26 && z_val < -23){
             if (shape->getID() == 5){
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::water].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::water].y);

@@ -34,7 +34,7 @@ void generateTree(int baseX, int baseY, int baseZ, std::map<std::tuple<int,int,i
     int leafRadius = 2; // Radius of the leaves around the top
 
     // Make trunk
-    for (int z = baseZ; z < baseZ + treeHeight; ++z) {
+    for (int z = (baseZ); z < baseZ + treeHeight; ++z) {
         glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(baseX, baseY, z));
         Cube* newCube = new Cube(translation);
         newCube->setID(2);
@@ -106,7 +106,7 @@ std::map<std::tuple<int, int, int>, Cube*> TerrainGenerator::createTranslationMa
                 }
 
                 // Add a layer of water.
-                if (z <= chunkDepth - 10) {
+                if (z <= chunkDepth - 14) {
                     if (z > terrainHeight) {
                         Cube* cube = new Cube(translation);
                         cube->setID(5);
@@ -117,7 +117,7 @@ std::map<std::tuple<int, int, int>, Cube*> TerrainGenerator::createTranslationMa
                 if (z == terrainHeight){
                     // Generate random probability of creating a tree and calculate the x,y, and z values for the tree.
                     float chance = distribution(generator);
-                    float currHeight = -maxChunkHeight + z - centerZOffset;
+                    float currHeight = -maxChunkHeight + z - centerZOffset-1;
                     float currX =  x - centerXOffset + worldXOffset;
                     float currY = y - centerYOffset + worldYOffset;
 
@@ -276,7 +276,7 @@ int TerrainGenerator::getRandomInt() {
 
     // Set up a discrete distribution where 0 has a 90% probability,
     // and -1, 1, 2, 3 each have a 2.5% probability
-    std::discrete_distribution<> dis({40, 25, 25, 5, 5});
+    std::discrete_distribution<> dis({50, 20, 20, 5, 5});
 
     // Generate a number based on the distribution
     int number = dis(gen);
