@@ -65,7 +65,7 @@ std::map<std::tuple<int, int, int>, Cube*> TerrainGenerator::createTranslationMa
     FastNoiseLite noise;
     noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
 
-    noise.SetFrequency(0.025f); // Can change this to get more mountainous terrain.
+    noise.SetFrequency(0.045f); // Can change this to get more mountainous terrain.
 
     // Want to center the chunk around the players current location.
     float centerXOffset = chunkSize / 2.0f;
@@ -103,7 +103,7 @@ std::map<std::tuple<int, int, int>, Cube*> TerrainGenerator::createTranslationMa
                 }
 
                 // Add a layer of water.
-                if (z == chunkDepth - 10) {
+                if (z <= chunkDepth - 10) {
                     if (z > terrainHeight) {
                         Cube* cube = new Cube(translation);
                         cube->setID(5);
@@ -202,7 +202,7 @@ std::vector<Cube*> TerrainGenerator::updatePlayerPosition(const glm::vec3& newPo
 }
 
 // finds the z value of the block underneath the camera position passed in.
-bool TerrainGenerator::getGroundHeight(glm::vec3 position) {
+int TerrainGenerator::getGroundHeight(glm::vec3 position) {
     // Adjust position for the fact that the original chunk is centered on the player.
     float adjustedPositionX = position.x + (position.x / abs(position.x)) * (float) chunkSize / 2.f;
     float adjustedPositionY = position.y + (position.y / abs(position.y)) * (float) chunkSize / 2.f;
@@ -220,6 +220,7 @@ bool TerrainGenerator::getGroundHeight(glm::vec3 position) {
     chunkY = (currentChunkY < 0) ? chunkY - 1 : chunkY;
 
     // Check the block above and below the Z position.
+    bool inWater = false;
     for (int i = -1; i <= 1; i++) {
         int chunkZ = floor(position.z - 0.5) + i + chunkDepth + chunkDepth / 2;
         // If any of the blocks are filled, return false.
@@ -227,11 +228,11 @@ bool TerrainGenerator::getGroundHeight(glm::vec3 position) {
             chunkMatrices1[{currentChunkX, currentChunkY}].end()) {
             int id = chunkMatrices1[{currentChunkX, currentChunkY}][{chunkX, chunkY, chunkZ}]->getID();
             if (id != 5) {
-                return false;
-            }
+                return 0;
+            } else inWater = true;
         }
     }
-    return true;
+    return (inWater) ? 2 : 1;
 }
 
 // getter method for chunk data.
