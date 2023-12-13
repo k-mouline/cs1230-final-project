@@ -178,7 +178,6 @@ bool TerrainGenerator::checkAndLoadChunks() {
     }
 
     int randomInt = getRandomInt();
-    std::cout<<randomInt <<std::endl;
     if(randomInt != 0 && randomInt != 1 && randomInt != -1){
 
         previousHeightOFfset++;
