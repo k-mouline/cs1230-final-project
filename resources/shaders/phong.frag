@@ -30,10 +30,9 @@ uniform int lightTypes[100]; // specifies what type of light it is
 uniform vec4 lightDirections[100]; // specifies direction of light
 uniform vec3 lightAttenuations[100]; // stores attenuation functions
 uniform vec4 lightPositions[100]; // specifies light positions
-uniform vec3 lightColors[100]; // specifies light positions
+uniform vec3 lightColors[100];
 
-
-
+uniform int blockID;
 
 void main() {
     float blend = 0.85f;
@@ -53,7 +52,8 @@ void main() {
             if(currAttenuation.x == (0.0) && currAttenuation.y == 0.0 && currAttenuation.z == 0.0){
                 attenuation = 1.0;
             }else{
-                attenuation = 1.0 / (currAttenuation.x + currAttenuation.y * distanceToLight + currAttenuation.z* distanceToLight * distanceToLight);
+                attenuation = 1.0 / (currAttenuation.x + currAttenuation.y * distanceToLight +
+                                     currAttenuation.z* distanceToLight * distanceToLight);
             }
 
         }
@@ -63,7 +63,7 @@ void main() {
         }
 
         vec3 toCamera = normalize(vec3(camera_pos) - vec3(world_pos));
-//        vec3 toLight = vec3(normalize(-lightDir));
+        //vec3 toLight = vec3(normalize(-lightDir));
         float diffuse  = clamp(dot(normalize(vec3(world_normal)), lightDir), 0, 1);
 
         vec3 reflectedLight = reflect(-lightDir, normalize(vec3(world_normal)));
@@ -72,13 +72,12 @@ void main() {
 
         float distance = length(vec3(camera_pos) - vec3(world_pos));
         float opacity = (distance > 25.f) ? 1.f - clamp((distance - 25.f) / 10.f, 0.f, 1.f): texCol[3];
+        opacity = (blockID == 5) ? opacity * .4f : opacity;
 
         vec3 currentColor = lightColors[i];
 
-        fragColor += vec4(vec3((kd*(1.0f-blend)+textureColor*blend)*diffuse*attenuation*currentColor + ka*textureColor + ks * specular)*currentColor, opacity)*attenuation;
-
-
+        fragColor += vec4(vec3((kd*(1.0f-blend)+textureColor*blend)*diffuse*attenuation*currentColor +
+                        ka*textureColor + ks * specular)*currentColor, opacity)*attenuation;
 
     }
-
 }
