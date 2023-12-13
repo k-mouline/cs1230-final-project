@@ -60,9 +60,11 @@ private:
     int m_screen_height;
 
     std::vector<int> lightTypes;
-    std::vector<glm::vec3> lightPositions;
+    std::vector<glm::vec4> lightPositions;
     std::vector<glm::vec4> lightDirections;
     std::vector<glm::vec3> attenuationFunctions;
+    std::vector<glm::vec3> lightColors;
+
 
 
     glm::vec3 cameraPos;

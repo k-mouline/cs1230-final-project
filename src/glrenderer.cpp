@@ -12,8 +12,8 @@
 GLRenderer::GLRenderer(QWidget *parent)
   : QOpenGLWidget(parent),
     m_ka(0.20),
-    m_kd(0.5),
-    m_ks(0.5),
+    m_kd(0.3),
+    m_ks(0.3),
     m_angleX(6),
     m_angleY(0),
     m_zoom(2)
@@ -92,9 +92,10 @@ void GLRenderer::initializeGL()
   initializeExampleGeometry();
 
   lightTypes.push_back(1);
-  lightPositions.push_back(glm::vec3(10.0, 0.0, 0.0));
+  lightPositions.push_back(glm::vec4(10.0, 0.0, 0.0,1.0));
   lightDirections.push_back(glm::vec4(0.0, 0.0, -1.0,1.0f));
   attenuationFunctions.push_back(glm::vec3(0.0, 0.0, 0.0f));
+  lightColors.push_back(glm::vec3(1.0,1.0,1.0));
 
 
   // Task 9: Set the active texture slot to texture slot 0
@@ -218,7 +219,10 @@ void GLRenderer::paintGL()
             glUniform3f(loc3, attenuationFunctions[i].x, attenuationFunctions[i].y, attenuationFunctions[i].z);
 
             GLint loc4 = glGetUniformLocation(m_phong_shader, ("lightPositions[" + std::to_string(i) + "]").c_str());
-            glUniform3f(loc4, lightPositions[i].x, lightPositions[i].y, lightPositions[i].z);
+            glUniform4f(loc4, lightPositions[i].x, lightPositions[i].y, lightPositions[i].z, lightPositions[i].w);
+            GLint loc5 = glGetUniformLocation(m_phong_shader, ("lightColors[" + std::to_string(i) + "]").c_str());
+            glUniform3f(loc5, lightColors[i].x, lightColors[i].y, lightColors[i].z);
+
         }
 
         glUniform1f(glGetUniformLocation(m_phong_shader, "ka"),m_ka);
@@ -597,9 +601,11 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
 
   if (m_keyMap[Qt::Key_T]) {
       lightTypes.push_back(0);
-      lightPositions.push_back(cameraPos);
+      lightPositions.push_back(glm::vec4(cameraPos,1.0));
       lightDirections.push_back(glm::vec4(1.0));
-      attenuationFunctions.push_back(glm::vec3(0.8, 0.2, 0.0));
+      attenuationFunctions.push_back(glm::vec3(0.1, 0.1, 0.0));
+      lightColors.push_back(glm::vec3(0.68,0.26,0.24));
+
   }
 
   // Jump movement stuff
