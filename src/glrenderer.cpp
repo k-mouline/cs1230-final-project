@@ -11,9 +11,9 @@
 
 GLRenderer::GLRenderer(QWidget *parent)
   : QOpenGLWidget(parent),
-    m_ka(0.15),
-    m_kd(0.15),
-    m_ks(0.05),
+    m_ka(0.35),
+    m_kd(0.2),
+    m_ks(0.2),
     m_angleX(6),
     m_angleY(0),
     m_zoom(2)
@@ -96,7 +96,6 @@ void GLRenderer::initializeGL()
   lightDirections.push_back(glm::vec4(0.0, 0.0, -1.0,1.0f));
   attenuationFunctions.push_back(glm::vec3(0.0, 0.0, 0.0f));
   lightColors.push_back(glm::vec3(1.0,1.0,1.0));
-
 
   // Task 9: Set the active texture slot to texture slot 0
   glActiveTexture(GL_TEXTURE0);
@@ -220,9 +219,9 @@ void GLRenderer::paintGL()
 
             GLint loc4 = glGetUniformLocation(m_phong_shader, ("lightPositions[" + std::to_string(i) + "]").c_str());
             glUniform4f(loc4, lightPositions[i].x, lightPositions[i].y, lightPositions[i].z, lightPositions[i].w);
+
             GLint loc5 = glGetUniformLocation(m_phong_shader, ("lightColors[" + std::to_string(i) + "]").c_str());
             glUniform3f(loc5, lightColors[i].x, lightColors[i].y, lightColors[i].z);
-
         }
 
         glUniform1f(glGetUniformLocation(m_phong_shader, "ka"),m_ka);
@@ -245,21 +244,23 @@ void GLRenderer::paintGL()
         if (isCovered && currID != 2 && currID != 3){
             continue;
         }
+        glUniform1i(glGetUniformLocation(m_phong_shader, "blockID"), currID);
+
         blockMap[{position[0], position[1], position[2]}] = true;
         float z_val = position[2];
         if (z_val < -18){
-            if (shape->getID() == 0){
+            if (currID == 0){
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::cobblestone].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::cobblestone].y);
             }
-            else if(shape->getID() == 1) {
+            else if(currID == 1) {
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::stone].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::stone].y);
             }
 
         }
         else if (z_val >= -18 && z_val < -15){
-            if (shape->getID() == 5){
+            if (currID == 5){
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::water].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::water].y);
             }
@@ -269,16 +270,16 @@ void GLRenderer::paintGL()
             }
         }
         else {
-            if(shape->getID() == 2){
+            if(currID == 2){
 
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::logSide].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::logSide].y);
 
-            }else if(shape->getID() ==3){
+            }else if(currID == 3){
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::leaves].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::leaves].y);
             }
-            else{
+            else {
                 glUniform1f(glGetUniformLocation(m_phong_shader, "xOffset"), textureMap[blockType::grassTop].x);
                 glUniform1f(glGetUniformLocation(m_phong_shader, "yOffset"), textureMap[blockType::grassTop].y);
 
@@ -567,35 +568,44 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
   float speed = movementSpeed;
   float distance = speed * deltaTime;
 
+
   // if s is pressed move backwards in x-y look direction
   if (m_keyMap[Qt::Key_S]) {
-      glm::vec3 newPos = cameraPos - distance * glm::normalize(glm::vec3(cameraFront.x, cameraFront.y, 0.f));
-      cameraPos = (generator.getGroundHeight(newPos)) ? newPos : cameraPos;
+      glm::vec3 posOffset = -distance * glm::normalize(glm::vec3(cameraFront.x, cameraFront.y, 0.f));
+      int blockIn = generator.getGroundHeight(cameraPos + posOffset);
+      cameraPos = (blockIn == 1) ? cameraPos + posOffset : (blockIn == 2) ? cameraPos + posOffset / 3.5f : cameraPos;
   }
 
   // if w is pressed move forwards in x-y look direction
   if (m_keyMap[Qt::Key_W]) {
-      glm::vec3 newPos = cameraPos + distance * glm::normalize(glm::vec3(cameraFront.x, cameraFront.y, 0.f));
-      cameraPos = (generator.getGroundHeight(newPos)) ? newPos : cameraPos;
+      glm::vec3 posOffset = distance * glm::normalize(glm::vec3(cameraFront.x, cameraFront.y, 0.f));
+      int blockIn = generator.getGroundHeight(cameraPos + posOffset);
+      cameraPos = (blockIn == 1) ? cameraPos + posOffset : (blockIn == 2) ? cameraPos + posOffset / 3.5f : cameraPos;
   }
 
   // if A is pressed move to the left of the cross product of up and front vectors
   if (m_keyMap[Qt::Key_A]) {
-      glm::vec3 newPos = cameraPos - glm::normalize(glm::cross(cameraFront, cameraUp)) * distance;
-      cameraPos = (generator.getGroundHeight(newPos)) ? newPos : cameraPos;
+      glm::vec3 posOffset = -glm::normalize(glm::cross(cameraFront, cameraUp)) * distance;
+      int blockIn = generator.getGroundHeight(cameraPos + posOffset);
+      cameraPos = (blockIn == 1) ? cameraPos + posOffset : (blockIn == 2) ? cameraPos + posOffset / 3.5f : cameraPos;
   }
 
   // if D is pressed move to the right of the cross product of up and front vectors
   if (m_keyMap[Qt::Key_D]) {
-      glm::vec3 newPos = cameraPos + glm::normalize(glm::cross(cameraFront, cameraUp)) * distance;
-      cameraPos = (generator.getGroundHeight(newPos)) ? newPos : cameraPos;
+      glm::vec3 posOffset = glm::normalize(glm::cross(cameraFront, cameraUp)) * distance;
+      int blockIn = generator.getGroundHeight(cameraPos + posOffset);
+      cameraPos = (blockIn == 1) ? cameraPos + posOffset : (blockIn == 2) ? cameraPos + posOffset / 3.5f : cameraPos;
   }
+
+  bool inWater = (generator.getGroundHeight(cameraPos) == 2) ? true : false;
+  swimTimer = (swimTimer > 0.9) ? 0 : swimTimer + deltaTime;
 
   // translate camera among world space vector up
   if (m_keyMap[Qt::Key_Space]) {
-      if (!inTheAir){
+
+      if (!inTheAir || (inWater && !swimTimer)){
           inTheAir = true;
-          velocity = reboundVelocity;
+          velocity = (inWater) ? reboundVelocity / 1.8f : reboundVelocity;
       }
   }
 
@@ -608,7 +618,7 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
   }
 
   // Jump movement stuff
-  velocity = fmax(velocity + acceleration*deltaTime, minimumVelocity);
+  velocity = fmax(velocity + ((inWater) ? acceleration / 1.75f : acceleration)*deltaTime, minimumVelocity);
   glm::vec3 newPos = glm::vec3(cameraPos.x, cameraPos.y, cameraPos.z + velocity*deltaTime);
   if (!generator.getGroundHeight(newPos)) {
       velocity = 0;
@@ -622,7 +632,6 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
 
   float maxDistance = 30.0f; // Set your distance threshold
   filterTorches(maxDistance);
-
 
   // recalculate viewMatrix with the updated parameters
   updateCamera();
@@ -651,27 +660,24 @@ void GLRenderer::populateBlockMap(){
 }
 
 void GLRenderer::filterTorches(float maxDistance) {
-  std::vector<size_t> indicesToRemove;
+    std::vector<size_t> indicesToRemove;
 
-  // Find indices to remove
-  for (size_t i = 1; i < lightPositions.size(); ++i) {
-      if (glm::distance(glm::vec3(lightPositions[i]), cameraPos) > maxDistance) {
-          indicesToRemove.push_back(i);
-      }
-  }
+    // Find indices to remove
+    for (size_t i = 1; i < lightPositions.size(); ++i) {
+        if (glm::distance(glm::vec3(lightPositions[i]), cameraPos) > maxDistance) {
+            indicesToRemove.push_back(i);
+        }
+    }
 
-  // Sort the indices in reverse order
-  std::sort(indicesToRemove.rbegin(), indicesToRemove.rend());
+    // Sort the indices in reverse order
+    std::sort(indicesToRemove.rbegin(), indicesToRemove.rend());
 
-  // Remove elements from all vectors
-  for (size_t index : indicesToRemove) {
-      lightPositions.erase(lightPositions.begin() + index);
-      attenuationFunctions.erase(attenuationFunctions.begin() + index);
-      lightColors.erase(lightColors.begin() + index);
-      lightDirections.erase(lightDirections.begin() + index);
-      lightTypes.erase(lightTypes.begin() + index);
-  }
+    // Remove elements from all vectors
+    for (size_t index : indicesToRemove) {
+        lightPositions.erase(lightPositions.begin() + index);
+        attenuationFunctions.erase(attenuationFunctions.begin() + index);
+        lightColors.erase(lightColors.begin() + index);
+        lightDirections.erase(lightDirections.begin() + index);
+        lightTypes.erase(lightTypes.begin() + index);
+    }
 }
-
-
-
