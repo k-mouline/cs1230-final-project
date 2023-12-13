@@ -34,7 +34,7 @@ public:
     std::vector<Cube*> cubesVector;
 
     // Takes in the camera position and gets the height of the terrain at that point.
-    bool getGroundHeight(glm::vec3 position);
+    int getGroundHeight(glm::vec3 position);
 };
 
 #endif // TERRAINGENERATOR_H
