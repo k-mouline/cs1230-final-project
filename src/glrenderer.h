@@ -50,7 +50,6 @@ private:
     void timerEvent(QTimerEvent *event) override;
     void updateCamera();
 
-    void filterTorches(float maxDistance);
     TerrainGenerator generator;
 
     int m_devicePixelRatio;
@@ -65,8 +64,6 @@ private:
     std::vector<glm::vec4> lightDirections;
     std::vector<glm::vec3> attenuationFunctions;
     std::vector<glm::vec3> lightColors;
-
-
 
     glm::vec3 cameraPos;
     glm::vec3 cameraFront;
@@ -97,13 +94,14 @@ private:
     std::vector<float> m_cube_data;
     GLuint m_cube_vbo;
     GLuint m_cube_vao;
-    float movementSpeed = 8.f;
+    float movementSpeed = 7.f;
     float m_rotationSpeed = 0.2f;
     float velocity = 0;
-    float reboundVelocity = 8;
+    float reboundVelocity = 9;
     float acceleration = -20;
     float minimumVelocity = -12;
     bool inTheAir = false;
+    float swimTimer = 0;
 
     GLuint m_grass_texture;
 
@@ -113,6 +111,7 @@ private:
 
     std::vector<Cube*> cubesVector = std::vector<Cube*>();
     void populateBlockMap();
+    void filterTorches(float maxDistance);
 
     glm::mat4 m_model = glm::mat4(1);
     glm::mat4 m_view = glm::mat4(1);
