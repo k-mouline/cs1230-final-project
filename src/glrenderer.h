@@ -109,6 +109,7 @@ private:
     std::map<std::tuple<float, float, float>, bool> blockMap;
 
     std::vector<Cube*> cubesVector = std::vector<Cube*>();
+    void populateBlockMap();
 
     glm::mat4 m_model = glm::mat4(1);
     glm::mat4 m_view = glm::mat4(1);

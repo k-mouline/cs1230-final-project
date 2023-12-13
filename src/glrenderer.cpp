@@ -183,8 +183,6 @@ void GLRenderer::paintGL()
 
     // Task 28: Call glViewport
     glViewport(0,0, m_screen_width, m_screen_height);
-
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     for(const auto& shape : cubesVector){
         glBindVertexArray(m_cube_vao);
@@ -223,21 +221,24 @@ void GLRenderer::paintGL()
             glUniform3f(loc4, lightPositions[i].x, lightPositions[i].y, lightPositions[i].z);
         }
 
-
-
-
-
-
-
-
         glUniform1f(glGetUniformLocation(m_phong_shader, "ka"),m_ka);
         glUniform1f(glGetUniformLocation(m_phong_shader, "kd"),m_kd);
         glUniform1f(glGetUniformLocation(m_phong_shader, "ks"),m_ks);
         // deciding which texture based off of layers
         glm::vec3 position = shape->getPosition();
-        std::tuple<float, float, float> positionAbove = {position[0], position[1], position[2] + 1};
+        bool isCovered = true;
+        for (int i = 0; i < 6; i++){
+            int a = (i % 3 == 0) ? ((i == 3) ? -1 : 1) : 0;
+            int b = (i % 3 == 1) ? ((i == 4) ? -1 : 1) : 0;
+            int c = (i % 3 == 2) ? 1 : 0;
+//            int c = (i % 3 == 2) ? ((i == 5) ? -1 : 1) : 0; (if we want to render blocks that are only exposed on the bottom)
+            std::tuple<float, float, float> nearbyBlock = {position[0] + a, position[1] + b, position[2] + c};
+            if (blockMap[nearbyBlock] == false){
+                isCovered = false;
+            }
+        }
         int currID = shape->getID();
-        if (blockMap[positionAbove] == true && currID != 2 && currID != 3){
+        if (isCovered && currID != 2 && currID != 3){
             continue;
         }
         blockMap[{position[0], position[1], position[2]}] = true;
@@ -414,6 +415,7 @@ void GLRenderer::initializeExampleGeometry()
   // Put data into the VBO
 
   cubesVector = generator.updatePlayerPosition(cameraPos, std::vector<Cube*>(), true);
+  populateBlockMap();
 
   // Translate the matrix by (1, 1, 1)
 
@@ -611,6 +613,7 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
 
   // update player position in terrain generator so it knows what chunks to load
   cubesVector = generator.updatePlayerPosition(cameraPos, cubesVector, false);
+  populateBlockMap();
 
   // recalculate viewMatrix with the updated parameters
   updateCamera();
@@ -628,6 +631,13 @@ void GLRenderer::initTextureMap(){
       for (float col = 0; col < 16; col++){
           textureMap[(row * 16) + col] = glm::vec2((col / 16.f), (15 - row) / 16.f);
       }
+  }
+}
+
+void GLRenderer::populateBlockMap(){
+  for(const auto& shape : cubesVector){
+      glm::vec3 position = shape->getPosition();
+      blockMap[{position[0], position[1], position[2]}] = true;
   }
 }
 
