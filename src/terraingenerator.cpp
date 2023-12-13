@@ -142,8 +142,6 @@ std::map<std::tuple<int, int, int>, Cube*> TerrainGenerator::createTranslationMa
 //    else{
 //        counter+=1;
 //    }
-    std::cout << previousHeightOFfset <<std::endl;
-    std::cout << counter <<std::endl;
 
     return matricesCubes;
 }
@@ -179,7 +177,21 @@ bool TerrainGenerator::checkAndLoadChunks() {
         chunkMatrices1.erase(chunk);
     }
 
-    previousHeightOFfset = getRandomInt();
+    int randomInt = getRandomInt();
+    std::cout<<randomInt <<std::endl;
+    if(randomInt != 0 && randomInt != 1 && randomInt != -1){
+
+        previousHeightOFfset++;
+    }
+    else{
+        if(previousHeightOFfset <= 1){
+            previousHeightOFfset = randomInt;
+        }
+        else{
+            previousHeightOFfset--;
+        }
+
+    }
     for (int x = currentChunkX - renderDistance; x <= currentChunkX + renderDistance; ++x) {
         for (int y = currentChunkY - renderDistance; y <= currentChunkY + renderDistance; ++y) {
             std::pair<int, int> chunkKey = {x, y};
@@ -264,7 +276,7 @@ int TerrainGenerator::getRandomInt() {
 
     // Set up a discrete distribution where 0 has a 90% probability,
     // and -1, 1, 2, 3 each have a 2.5% probability
-    std::discrete_distribution<> dis({40, 20, 40, 0, 0});
+    std::discrete_distribution<> dis({40, 25, 25, 5, 5});
 
     // Generate a number based on the distribution
     int number = dis(gen);
