@@ -25,7 +25,7 @@ public:
     float getFractalNoise(FastNoiseLite noise, float x, float y, int octaves, float persistence);
 
     glm::vec3 playerPosition;
-    int renderDistance = 3; // Number of chunks to render in each direction from the player
+    int renderDistance = 2; // Number of chunks to render in each direction from the player
     std::vector<Cube*> updatePlayerPosition(const glm::vec3& newPosition, std::vector<Cube*> oldCubes, bool isFirst);
     bool checkAndLoadChunks();
     const std::map<std::pair<int, int>, std::map<std::tuple<int, int, int>, Cube*>>& getChunkMatrices() const;

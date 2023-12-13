@@ -177,6 +177,7 @@ bool TerrainGenerator::checkAndLoadChunks() {
         chunkMatrices1.erase(chunk);
     }
 
+    if(counter % 10 == 0){
     int randomInt = getRandomInt();
     if(randomInt != 0 && randomInt != 1 && randomInt != -1){
 
@@ -191,6 +192,9 @@ bool TerrainGenerator::checkAndLoadChunks() {
         }
 
     }
+
+    }
+    counter++;
     for (int x = currentChunkX - renderDistance; x <= currentChunkX + renderDistance; ++x) {
         for (int y = currentChunkY - renderDistance; y <= currentChunkY + renderDistance; ++y) {
             std::pair<int, int> chunkKey = {x, y};
