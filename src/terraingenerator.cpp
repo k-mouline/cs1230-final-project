@@ -28,19 +28,20 @@ float TerrainGenerator::getFractalNoise(FastNoiseLite noise, float x, float y, i
 }
 
 
-void generateTree(int baseX, int baseY, int baseZ, std::map<std::pair<int,int>, std::vector<Cube*>>& matricesCubes, int originalX, int originalY) {
+void generateTree(int baseX, int baseY, int baseZ, std::map<std::tuple<int,int,int>, Cube*> &matricesCubes,
+                  int originalX, int originalY, int originalZ) {
     int treeHeight = rand() % 5 + 4; // Random tree height between 4 and 8
     int leafRadius = 2; // Radius of the leaves around the top
 
-    // make trunk TODO: incorporate textures
+    // Make trunk
     for (int z = baseZ; z < baseZ + treeHeight; ++z) {
         glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(baseX, baseY, z));
         Cube* newCube = new Cube(translation);
         newCube->setID(2);
-        matricesCubes[{originalX, originalY}].push_back(newCube);
+        matricesCubes[{originalX, originalY, z - baseZ + originalZ}] = newCube;
     }
 
-    // generate leaves
+    // Generate leaves
     for (int x = -leafRadius; x <= leafRadius; ++x) {
         for (int y = -leafRadius; y <= leafRadius; ++y) {
             for (int z = treeHeight - leafRadius; z <= treeHeight; ++z) {
@@ -48,7 +49,7 @@ void generateTree(int baseX, int baseY, int baseZ, std::map<std::pair<int,int>, 
                     glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(baseX + x, baseY + y, baseZ + z));
                     Cube* newCube = new Cube(translation);
                     newCube->setID(3);
-                    matricesCubes[{originalX + x, originalY + y}].push_back(newCube);
+                    matricesCubes[{originalX + x, originalY + y, baseZ + z}] = newCube;
                 }
             }
         }
@@ -56,88 +57,76 @@ void generateTree(int baseX, int baseY, int baseZ, std::map<std::pair<int,int>, 
 }
 
 
-// method takes in the current chunk location (using ints) and using these as offsets
-std::map<std::pair<int, int>, std::vector<Cube*>> TerrainGenerator::createTranslationMatricesForChunk(int chunkX, int chunkY) {
-    //std::map<std::pair<int, int>, std::vector<glm::mat4>> matrices;
+// Function takes in the current chunk location (using ints) and using these as offsets.
+std::map<std::tuple<int, int, int>, Cube*> TerrainGenerator::createTranslationMatricesForChunk(int chunkX, int chunkY) {
+    std::map<std::tuple<int, int, int>, Cube*> matricesCubes;
 
-    std::map<std::pair<int,int>, std::vector<Cube*>> matricesCubes;
-
-    // use FastNoiseLite library (TODO: replace with our own perlin noise)
+    // Use FastNoiseLite library.
     FastNoiseLite noise;
     noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
 
-    noise.SetFrequency(0.02f); // can change this to get more mountainous terrain
+    noise.SetFrequency(0.025f); // Can change this to get more mountainous terrain.
 
-    // want to center the chunk around the players current location
-    float centerXOffset = (chunkSize * offset) / 2.0f;
-    float centerYOffset = (chunkSize * offset) / 2.0f;
-    float centerZOffset = (maxChunkHeight * offset) / 2.0f;
+    // Want to center the chunk around the players current location.
+    float centerXOffset = chunkSize / 2.0f;
+    float centerYOffset = chunkSize / 2.0f;
+    float centerZOffset = maxChunkHeight / 2.0f;
 
-    // based on what chunk we are in we need to offset from the origin using the values of chunkX and chunkY
-    float worldXOffset = chunkX * chunkSize * offset;
-    float worldYOffset = chunkY * chunkSize * offset;
+    // Based on what chunk we are in we need to offset from the origin using the values of chunkX and chunkY.
+    float worldXOffset = chunkX * chunkSize;
+    float worldYOffset = chunkY * chunkSize;
 
     std::default_random_engine generator;
     std::uniform_real_distribution<float> distribution(0.0, 1.0);
 
-    const int octaves = 8;
-    const float persistence = 0.5f;
-
-    // iterate through the block in the chunk
+    // Iterate through the block in the chunk.
     for (int x = 0; x < chunkSize; x++) {
         for (int y = 0; y < chunkSize; y++) {
 
-//            // use noise to get the height of terrain
-//            float heightValue = getFractalNoise(noise, (float)x + chunkX * chunkSize, (float)y + chunkY * chunkSize, octaves, persistence);
-//            int terrainHeight = static_cast<int>((heightValue + 1) * 0.5 * maxChunkHeight);
-
-
+            // Use noise to get the height of terrain.
             float heightValue = noise.GetNoise((float)x + chunkX * chunkSize, (float)y + chunkY * chunkSize);
             int terrainHeight = static_cast<int>((heightValue + 1) * 0.5 * maxChunkHeight);
 
-
-
-            // iterate through the depth of the terrain and create blocks up until the terrain height.
+            // Iterate through the depth of the terrain and create blocks up until the terrain height.
             for (int z = 0; z < chunkDepth; z++) {
-                glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(
-                                                                            x * offset - centerXOffset + worldXOffset,
-                                                                            y * offset - centerYOffset + worldYOffset,
-                                                                            -maxChunkHeight + z * offset - centerZOffset));
 
+                // use the calculated offsets from earlier to form the translation matrix of the given cube.
+                // z is offset by negative maxChunkHeight so that the blocks form beneath us.
+                glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(
+                                                                            x - centerXOffset + worldXOffset,
+                                                                            y - centerYOffset + worldYOffset,
+                                                                            -maxChunkHeight + z - centerZOffset));
+
+                // Basic terrain.
                 if (z < terrainHeight) {
-                    // use the calculated offsets from earlier to form the translation matrix of the given cube.
-                    // z is offset by negative maxChunkHeight so that the blocks form beneath us.
-                    // matrices[{x, y}].push_back(translation);
-                    matricesCubes[{x,y}].push_back(new Cube(translation));
+                    matricesCubes[{x,y,z}] = new Cube(translation);
                 }
 
                 // Add a layer of water.
                 if (z == chunkDepth - 10) {
                     if (z > terrainHeight) {
-                        Cube *cube = new Cube(translation);
+                        Cube* cube = new Cube(translation);
                         cube->setID(5);
-                        matricesCubes[{x,y}].push_back(cube);
+                        matricesCubes[{x,y,z}] = cube;
                     }
-
                 }
-                if(z == terrainHeight){
-                    // generate random probability of creating a tree and calculate the x,y, and z values for where the tree exists
-                    float chance = distribution(generator);
-                    float currHeight = -maxChunkHeight + z * offset - centerZOffset;
-                    float currX =  x * offset - centerXOffset + worldXOffset;
-                    float currY = y * offset - centerYOffset + worldYOffset;
 
-                    // if height and probability match characteristics generate tree
-                    if(chance < treeProbability && currHeight > treeHeight){
-                        generateTree(currX, currY, currHeight, matricesCubes,x,y); // Generate the tree
+                if (z == terrainHeight){
+                    // Generate random probability of creating a tree and calculate the x,y, and z values for the tree.
+                    float chance = distribution(generator);
+                    float currHeight = -maxChunkHeight + z - centerZOffset;
+                    float currX =  x - centerXOffset + worldXOffset;
+                    float currY = y - centerYOffset + worldYOffset;
+
+                    // If height and probability match characteristics generate tree.
+                    if (chance < treeProbability && currHeight > treeHeight){
+                        generateTree(currX, currY, currHeight, matricesCubes, x, y, z); // Generate the tree
                     }
-                    matricesCubes[{x,y}].push_back(new Cube(translation));
+                    matricesCubes[{x,y,z}] = new Cube(translation);
                 }
             }
-
         }
     }
-
     return matricesCubes;
 }
 
@@ -182,7 +171,6 @@ bool TerrainGenerator::checkAndLoadChunks() {
                     // Load from cache
                     chunkMatrices1[chunkKey] = cachedChunkMatrices2[chunkKey];
                     cachedChunkMatrices2.erase(chunkKey);
-
                 } else {
                     // Generate new chunk
                     chunkMatrices1[chunkKey] = createTranslationMatricesForChunk(x, y);
@@ -190,9 +178,7 @@ bool TerrainGenerator::checkAndLoadChunks() {
             }
         }
     }
-
     return !chunksToUnload.empty();
-
 }
 
 // takes in player position (cameraPosition instance variable) and updates chunks based on that
@@ -206,12 +192,9 @@ std::vector<Cube*> TerrainGenerator::updatePlayerPosition(const glm::vec3& newPo
         for (const auto& chunkEntry : chunkMatrices1) {
             const auto& chunkMatrix = chunkEntry.second;
 
-            for (const auto& blockColumn : chunkMatrix) {
-                const auto& columnMatrices = blockColumn.second;
-
-                for (Cube* cube : columnMatrices) {
-                    cubesVector.push_back(cube);
-                }
+            for (const auto& cubeIndex : chunkMatrix) {
+                const auto& cube = cubeIndex.second;
+                cubesVector.push_back(cube);
             }
         }
     }
@@ -219,7 +202,7 @@ std::vector<Cube*> TerrainGenerator::updatePlayerPosition(const glm::vec3& newPo
 }
 
 // finds the z value of the block underneath the camera position passed in.
-float TerrainGenerator::getGroundHeight(glm::vec3 position) {
+bool TerrainGenerator::getGroundHeight(glm::vec3 position) {
     // Adjust position for the fact that the original chunk is centered on the player.
     float adjustedPositionX = position.x + (position.x / abs(position.x)) * (float) chunkSize / 2.f;
     float adjustedPositionY = position.y + (position.y / abs(position.y)) * (float) chunkSize / 2.f;
@@ -236,15 +219,22 @@ float TerrainGenerator::getGroundHeight(glm::vec3 position) {
     chunkX = (currentChunkX < 0) ? chunkX - 1 : chunkX;
     chunkY = (currentChunkY < 0) ? chunkY - 1 : chunkY;
 
-    // Get the terrain height by using the size of the vector storing the blocks in a given column.
-    int terrainHeight = chunkMatrices1[{currentChunkX, currentChunkY}][{chunkX, chunkY}].size();
-
-    // This calculation is taken from the createTranslationMatricesForChunk function above.
-    float finalZ = (float) (-maxChunkHeight + terrainHeight * offset - (maxChunkHeight * offset) / 2.0f + 1.5f);
-    return finalZ;
+    // Check the block above and below the Z position.
+    for (int i = -1; i <= 1; i++) {
+        int chunkZ = floor(position.z - 0.5) + i + chunkDepth + chunkDepth / 2;
+        // If any of the blocks are filled, return false.
+        if (chunkMatrices1[{currentChunkX, currentChunkY}].find({chunkX, chunkY, chunkZ}) !=
+            chunkMatrices1[{currentChunkX, currentChunkY}].end()) {
+            int id = chunkMatrices1[{currentChunkX, currentChunkY}][{chunkX, chunkY, chunkZ}]->getID();
+            if (id != 5) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 // getter method for chunk data.
-const std::map<std::pair<int, int>, std::map<std::pair<int, int>, std::vector<Cube*>>>& TerrainGenerator::getChunkMatrices() const {
+const std::map<std::pair<int, int>, std::map<std::tuple<int, int, int>, Cube*>>& TerrainGenerator::getChunkMatrices() const {
     return chunkMatrices1;
 }
