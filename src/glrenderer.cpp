@@ -611,7 +611,10 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
 
   if (m_keyMap[Qt::Key_T]) {
       lightTypes.push_back(0);
-      lightPositions.push_back(glm::vec4(cameraPos,1.0));
+      glm::vec3 posOffset = 5*distance * glm::normalize(glm::vec3(cameraFront.x, cameraFront.y, 0.f));
+
+      glm::vec3 lightPos = cameraPos + posOffset;
+      lightPositions.push_back(glm::vec4(lightPos,1.0));
       lightDirections.push_back(glm::vec4(1.0));
       attenuationFunctions.push_back(glm::vec3(0.4, 0.4, 0.0));
       lightColors.push_back(glm::vec3(0.96,0.60,0.24));
