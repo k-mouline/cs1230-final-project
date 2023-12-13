@@ -11,9 +11,9 @@
 
 GLRenderer::GLRenderer(QWidget *parent)
   : QOpenGLWidget(parent),
-    m_ka(0.20),
-    m_kd(0.3),
-    m_ks(0.3),
+    m_ka(0.15),
+    m_kd(0.15),
+    m_ks(0.05),
     m_angleX(6),
     m_angleY(0),
     m_zoom(2)
@@ -605,7 +605,6 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
       lightDirections.push_back(glm::vec4(1.0));
       attenuationFunctions.push_back(glm::vec3(0.1, 0.1, 0.0));
       lightColors.push_back(glm::vec3(0.68,0.26,0.24));
-
   }
 
   // Jump movement stuff
@@ -620,6 +619,10 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
   // update player position in terrain generator so it knows what chunks to load
   cubesVector = generator.updatePlayerPosition(cameraPos, cubesVector, false);
   populateBlockMap();
+
+  float maxDistance = 30.0f; // Set your distance threshold
+  filterTorches(maxDistance);
+
 
   // recalculate viewMatrix with the updated parameters
   updateCamera();
@@ -646,4 +649,29 @@ void GLRenderer::populateBlockMap(){
       blockMap[{position[0], position[1], position[2]}] = true;
   }
 }
+
+void GLRenderer::filterTorches(float maxDistance) {
+  std::vector<size_t> indicesToRemove;
+
+  // Find indices to remove
+  for (size_t i = 1; i < lightPositions.size(); ++i) {
+      if (glm::distance(glm::vec3(lightPositions[i]), cameraPos) > maxDistance) {
+          indicesToRemove.push_back(i);
+      }
+  }
+
+  // Sort the indices in reverse order
+  std::sort(indicesToRemove.rbegin(), indicesToRemove.rend());
+
+  // Remove elements from all vectors
+  for (size_t index : indicesToRemove) {
+      lightPositions.erase(lightPositions.begin() + index);
+      attenuationFunctions.erase(attenuationFunctions.begin() + index);
+      lightColors.erase(lightColors.begin() + index);
+      lightDirections.erase(lightDirections.begin() + index);
+      lightTypes.erase(lightTypes.begin() + index);
+  }
+}
+
+
 

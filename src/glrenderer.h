@@ -50,6 +50,7 @@ private:
     void timerEvent(QTimerEvent *event) override;
     void updateCamera();
 
+    void filterTorches(float maxDistance);
     TerrainGenerator generator;
 
     int m_devicePixelRatio;
