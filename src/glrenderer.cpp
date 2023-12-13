@@ -604,7 +604,7 @@ void GLRenderer::timerEvent(QTimerEvent *event) {
       lightPositions.push_back(glm::vec4(cameraPos,1.0));
       lightDirections.push_back(glm::vec4(1.0));
       attenuationFunctions.push_back(glm::vec3(0.1, 0.1, 0.0));
-      lightColors.push_back(glm::vec3(0.68,0.26,0.24));
+      lightColors.push_back(glm::vec3(0.96,0.60,0.24));
   }
 
   // Jump movement stuff
